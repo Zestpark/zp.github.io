@@ -55,7 +55,7 @@
 
     /* Case cards */
     [data-theme="light"] .case-photo { background: #d8d9d6; }
-    [data-theme="light"] .case-photo svg { stroke: rgba(0,0,0,0.45) !important; fill: none !important; }
+    [data-theme="light"] .case-photo svg { stroke: #ea580c !important; fill: none !important; }
     [data-theme="light"] .case-card:hover { background: #dedede; }
     [data-theme="light"] .case-card:hover .case-photo svg { opacity: 0.65; }
     [data-theme="light"] .case-logo-img { filter: brightness(0); }
@@ -177,6 +177,8 @@
     }
     .btn-primary { background: var(--white); color: var(--black); }
     .btn-primary:hover { background: var(--off-black); color: var(--white); }
+    .hero .btn-primary { background: #f97316; color: #fff; }
+    .hero .btn-primary:hover { background: #ea580c; color: #fff; }
     .btn-secondary {
       background: transparent; color: var(--white);
       box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.2);
@@ -373,7 +375,7 @@
     }
 
     /* ── COSMOS STACK ── */
-    .stack-section { background: var(--off-black); }
+    .stack-section { background: var(--black); }
     .stack-header {
       display: flex; justify-content: space-between; align-items: flex-end;
       gap: 60px; margin-bottom: 52px;
@@ -388,13 +390,16 @@
     }
     .stack-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
     .stack-card-wide { grid-column: span 2; }
+    .stack-card.hiw-row { background: #f97316; border-color: #ea6c0a; }
+    .stack-card.hiw-row .stack-desc { color: var(--white); }
+    .stack-card.hiw-row .stack-name { color: var(--black); }
     .stack-pill {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 3px 12px; border-radius: 100px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.15);
+      background: var(--black);
       font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--gray-med); margin-bottom: 18px;
+      text-transform: uppercase; color: var(--white); margin-bottom: 18px;
     }
     .stack-name {
       font-size: 1.25rem; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 10px;
@@ -466,6 +471,7 @@
 
     /* ── COSMOS HUB ── */
     .hub-section { border-top: 1px solid var(--border); background: var(--off-black); }
+
     .hub-inner {
       display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
     }
@@ -780,7 +786,7 @@
     <h1>Residential IP as a Service for AI Agents</h1>
     <p class="hero-sub">Many websites block datacenter IPs. SpaceRouter routes your agent's traffic through real residential connections — transparently, with zero code changes beyond setting a proxy URL.</p>
     <div class="hero-ctas">
-      <a href="#" class="btn btn-primary btn-lg">
+      <a href="#get-started" class="btn btn-primary btn-lg">
         Get Started
         <svg class="arrow-icon" viewBox="0 0 20 30" fill="currentColor"><path d="M9.997 19.997v-10h10v10zM0 29.998V20h10v10z"/><path d="M0 10V0h10v10z"/></svg>
       </a>
@@ -795,7 +801,7 @@
   <div class="wrap">
     <div class="customers-intro r">
       <p class="eyebrow">The Problem</p>
-      <h2 class="section-h2">AI Agents are not traditional bots. But they're blocked like them.</h2>
+      <h2 class="section-h2">AI Agents are not traditional bots. But <span style="color:#fb923c">they're blocked</span> like them.</h2>
       <p class="section-lead" style="margin-top:14px;max-width:640px;">Unlike simple web scrapers, they navigate websites the way humans do — clicking, scrolling, and interacting with dynamic content. But getting them treated like humans is another challenge entirely. Residential IPs are a critical piece of that puzzle. SpaceRouter provides Residential IPs with agent-native tooling (Skill, CLI, SDK, API).</p>
     </div>
     <div class="cases-grid">
@@ -807,7 +813,7 @@
         </div>
         <div class="case-photo-wrap">
           <div class="case-photo">
-            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fb923c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
               <!-- two source nodes -->
               <circle cx="22" cy="36" r="6"/><circle cx="22" cy="84" r="6"/>
               <!-- lanes to gateway -->
@@ -833,7 +839,7 @@
         </div>
         <div class="case-photo-wrap">
           <div class="case-photo">
-            <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fb923c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
               <!-- globe -->
               <circle cx="70" cy="78" r="50"/>
               <ellipse cx="70" cy="78" rx="24" ry="50"/>
@@ -854,7 +860,7 @@
         </div>
         <div class="case-photo-wrap">
           <div class="case-photo">
-            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fb923c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
               <!-- client box -->
               <rect x="15" y="35" width="50" height="50" rx="8"/>
               <line x1="25" y1="52" x2="55" y2="52" opacity="0.5"/>
@@ -886,7 +892,7 @@
         </div>
         <div class="case-photo-wrap">
           <div class="case-photo">
-            <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+            <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="#fb923c" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
               <!-- shield -->
               <path d="M60 12 L100 28 L100 64 Q100 102 60 126 Q20 102 20 64 L20 28 Z"/>
               <!-- padlock body -->
