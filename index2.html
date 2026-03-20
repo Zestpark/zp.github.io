@@ -38,7 +38,7 @@
     [data-theme="light"] nav { background: rgba(244,244,242,0.92); border-bottom-color: rgba(0,0,0,0.08); }
 
     /* Hero: desaturate image and add a strong cream wash so text stays legible */
-    [data-theme="light"] .hero-bg { filter: brightness(1.05) saturate(0.25) opacity(0.35); }
+    [data-theme="light"] .hero-bg { filter: brightness(0.9) saturate(0.2) opacity(0.28); }
     [data-theme="light"] .hero-grad {
       background: linear-gradient(to bottom,
         rgba(244,244,242,0.72) 0%,
@@ -81,7 +81,7 @@
     [data-theme="light"] .timeline::before { background: rgba(0,0,0,0.12); }
     [data-theme="light"] .tl-dot { border-color: rgba(0,0,0,0.25); background: var(--black); }
     [data-theme="light"] .tl-dot.next { background: #888; border-color: #888; }
-    [data-theme="light"] .tl-item.is-live { background: linear-gradient(120deg, rgba(99,102,241,0.12) 0%, rgba(59,130,246,0.06) 50%, transparent 100%); border-color: rgba(99,102,241,0.22); }
+    [data-theme="light"] .tl-item.is-live { background: linear-gradient(120deg, rgba(249,115,22,0.12) 0%, rgba(234,88,12,0.05) 50%, transparent 100%); border-color: rgba(249,115,22,0.25); }
 
     /* Scrollbar */
     [data-theme="light"] ::-webkit-scrollbar-thumb { background: #bbb; }
@@ -195,21 +195,26 @@
     }
     #hero-dots {
       position: absolute; inset: 0; z-index: 0; overflow: hidden;
+      will-change: transform, opacity;
     }
     #hero-dots canvas { display: block; width: 100% !important; height: 100% !important; }
     .hero-bg {
-      position: absolute; inset: 0; z-index: 0;
-      background-image: url('https://cdn.sanity.io/images/9xlod89z/production/36dac1117a4f0dd7e6997991889fb2d8492c49d5-10240x6400.webp');
-      background-size: cover; background-position: center center;
+      position: absolute; inset: -8%; z-index: 0;
+      width: 116%; height: 116%;
+      object-fit: cover; object-position: center center;
       filter: brightness(0.42);
+      transform-origin: center center;
+      will-change: transform, filter;
     }
     .hero-grad {
       position: absolute; inset: 0; z-index: 1;
       background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.7) 100%);
+      will-change: opacity;
     }
     .hero-content {
       position: relative; z-index: 2;
       max-width: 860px; margin: 0 auto;
+      will-change: transform, opacity;
     }
     h1, h2, h3 { font-family: var(--font-display); }
     .hero h1 {
@@ -355,6 +360,16 @@
     .uc-desc {
       font-size: 0.8125rem; font-weight: 300; color: var(--gray-dim); line-height: 1.6;
     }
+    /* ── ACCENT CARDS ── */
+    .uc-card.accent {
+      background: linear-gradient(135deg, rgba(249,115,22,0.11) 0%, rgba(234,88,12,0.04) 100%);
+      border-color: rgba(249,115,22,0.3);
+    }
+    .uc-card.accent .uc-name { color: #fb923c; }
+    .uc-card.accent:hover {
+      background: linear-gradient(135deg, rgba(249,115,22,0.18) 0%, rgba(234,88,12,0.08) 100%);
+      border-color: rgba(249,115,22,0.45); transform: translateY(-2px);
+    }
 
     /* ── COSMOS STACK ── */
     .stack-section { background: var(--off-black); }
@@ -386,6 +401,16 @@
     .stack-desc {
       font-size: 0.875rem; font-weight: 300; color: var(--gray-med); line-height: 1.65;
     }
+    .stack-card.accent {
+      background: linear-gradient(135deg, rgba(249,115,22,0.11) 0%, rgba(234,88,12,0.04) 100%);
+      border-color: rgba(249,115,22,0.3);
+    }
+    .stack-card.accent .stack-pill {
+      border-color: rgba(249,115,22,0.35);
+      background: rgba(249,115,22,0.1);
+      color: #fb923c;
+    }
+    .stack-card.accent:hover { border-color: rgba(249,115,22,0.5); }
     .stack-metrics {
       display: flex; gap: 28px; margin-top: 22px;
       padding-top: 22px; border-top: 1px solid var(--border);
@@ -497,13 +522,13 @@
       transform: translateX(-50%);
     }
     .tl-dot.live {
-      background: #818cf8; border-color: #818cf8;
-      box-shadow: 0 0 0 3px rgba(99,102,241,0.3);
+      background: #f97316; border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249,115,22,0.3);
       animation: tl-pulse 2.2s ease-in-out infinite;
     }
     @keyframes tl-pulse {
-      0%, 100% { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
-      50%       { box-shadow: 0 0 0 8px rgba(99,102,241,0.0); }
+      0%, 100% { box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
+      50%       { box-shadow: 0 0 0 8px rgba(249,115,22,0.0); }
     }
     .tl-dot.next { background: var(--gray-dim); border-color: var(--gray-dim); }
     .tl-content { padding-left: 28px; }
@@ -511,8 +536,8 @@
     .tl-desc { font-size: 0.875rem; color: var(--gray-med); line-height: 1.65; max-width: 560px; }
     /* live item highlight */
     .tl-item.is-live {
-      background: linear-gradient(120deg, rgba(99,102,241,0.18) 0%, rgba(59,130,246,0.08) 50%, transparent 100%);
-      border: 1px solid rgba(99,102,241,0.25);
+      background: linear-gradient(120deg, rgba(249,115,22,0.14) 0%, rgba(234,88,12,0.06) 50%, transparent 100%);
+      border: 1px solid rgba(249,115,22,0.28);
       border-radius: 12px;
       padding: 20px 20px 20px 0;
       margin-bottom: 24px;
@@ -524,7 +549,7 @@
     }
     .tl-item.is-live .tl-label em::before {
       content: ''; display: inline-block; width: 5px; height: 5px;
-      background: #818cf8; border-radius: 50%;
+      background: #f97316; border-radius: 50%;
       animation: tl-pulse 2.2s ease-in-out infinite;
     }
     .tl-item.is-live .tl-dot { top: 23px; }
@@ -661,16 +686,50 @@
     }
     @media (max-width: 700px) {
       nav { padding: 0 20px; }
-      .wrap { padding: 72px 20px; }
+      .wrap { padding: 64px 20px; }
       .hero { padding: 74px 20px 0; }
       .uc-grid { grid-template-columns: 1fr 1fr; }
       .blog-grid { grid-template-columns: 1fr; }
       .footer-grid { grid-template-columns: 1fr 1fr; }
       .why-features { grid-template-columns: 1fr; }
+      /* Section headers: stack vertically */
+      .stack-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 32px; }
+      .blog-header { flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 32px; }
+      /* Code windows: tighter padding */
+      .code-pre { padding: 20px 18px; font-size: 0.8rem; line-height: 1.7; }
+      /* Example tabs: smaller */
+      .ex-tab { padding: 8px 14px; font-size: 0.8125rem; }
+      /* Case cards: tighter text padding */
+      .case-text { padding: 28px 24px; }
+      /* Timeline: narrower label column */
+      .timeline::before { left: 76px; }
+      .tl-item { grid-template-columns: 76px 1fr; }
+      .tl-dot { left: 76px; }
+      .tl-item.is-live .tl-dot { top: 23px; }
+      .tl-label { padding-right: 16px; }
+      .tl-content { padding-left: 22px; }
+    }
+    @media (max-width: 640px) {
+      /* SDKs 2-col inline override — collapse earlier on phones */
+      #sdks .uc-grid { grid-template-columns: 1fr !important; }
+      /* Code windows: prevent overflow, allow internal scroll */
+      .code-window { max-width: 100%; overflow: hidden; }
+      .code-pre { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .hub-code .code-window { max-width: 100%; }
+      /* SDK cards: tighter padding + fix grid overflow on small screens */
+      #sdks .uc-card { padding: 24px !important; min-width: 0; overflow: hidden; }
     }
     @media (max-width: 480px) {
-      .hero h1 { font-size: 2.3rem; }
+      .hero h1 { font-size: 2.2rem; }
+      /* Hero CTAs: stack buttons */
+      .hero-ctas { flex-direction: column; align-items: stretch; }
+      .hero-ctas .btn { width: 100%; justify-content: center; }
+      /* hiw-row: single column */
+      .hiw-row { grid-template-columns: 1fr !important; }
+      /* Use cases: single col */
       .uc-grid { grid-template-columns: 1fr; }
+      /* Footer single col */
+      .footer-grid { grid-template-columns: 1fr !important; }
     }
   </style>
 </head>
@@ -709,7 +768,9 @@
 
 <!-- HERO — center aligned -->
 <section class="hero">
-  <div class="hero-bg"></div>
+  <video class="hero-bg" autoplay muted loop playsinline preload="auto">
+    <source src="hero-bg.mp4" type="video/mp4">
+  </video>
   <div id="hero-dots"></div>
   <div class="hero-grad"></div>
   <div class="hero-content">
@@ -847,8 +908,8 @@
     <h2 class="section-h2 r" data-d="1">Everything your agent needs</h2>
     <div class="uc-grid">
       <div class="uc-card r"><div class="uc-name">HTTP &amp; SOCKS5</div><div class="uc-desc">Dual-protocol support. HTTP on port 8080, SOCKS5 on port 1080. Same residential node pool behind both.</div></div>
-      <div class="uc-card r" data-d="1"><div class="uc-name">Geographic Targeting</div><div class="uc-desc">Route through specific countries using ISO 3166-1 codes. Set X-SpaceRouter-Region: KR for a Korean IP.</div></div>
-      <div class="uc-card r" data-d="2"><div class="uc-name">Zero Code Changes</div><div class="uc-desc">Standard proxy protocol. Just set your proxy URL and authenticate with your API key. Works with any HTTP client.</div></div>
+      <div class="uc-card accent r" data-d="1"><div class="uc-name">Geographic Targeting</div><div class="uc-desc">Route through specific countries using ISO 3166-1 codes. Set X-SpaceRouter-Region: KR for a Korean IP.</div></div>
+      <div class="uc-card accent r" data-d="2"><div class="uc-name">Zero Code Changes</div><div class="uc-desc">Standard proxy protocol. Just set your proxy URL and authenticate with your API key. Works with any HTTP client.</div></div>
       <div class="uc-card r" data-d="3"><div class="uc-name">Intelligent Routing</div><div class="uc-desc">Health-scored node selection with weighted preferences. Requests route through the best available node automatically.</div></div>
       <div class="uc-card r"><div class="uc-name">Security Built In</div><div class="uc-desc">mTLS between components, SSRF protection, DNS rebinding prevention, rate limiting, and full header stripping.</div></div>
       <div class="uc-card r" data-d="1"><div class="uc-name">Request Tracing</div><div class="uc-desc">Every request gets a unique X-SpaceRouter-Request-Id for end-to-end debugging across the entire routing path.</div></div>
@@ -936,7 +997,7 @@
       <p class="section-lead r" data-d="1">Each component has a single responsibility. Together they route your agent's traffic through a real residential IP.</p>
     </div>
     <div class="stack-grid">
-      <div class="stack-card r">
+      <div class="stack-card accent r">
         <div class="stack-pill">Entry point</div>
         <div class="stack-name">Proxy Gateway</div>
         <div class="stack-desc">Agent-facing entry point. Handles HTTP and SOCKS5 proxy protocols, authentication, rate limiting, and route selection.</div>
@@ -1184,11 +1245,69 @@ const io = new IntersectionObserver(entries => {
 }, { threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
 document.querySelectorAll('.r').forEach(el => io.observe(el));
 
-// ── NAV SCROLL ──
-window.addEventListener('scroll', () => {
-  document.querySelector('nav').style.borderBottomColor =
-    scrollY > 10 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)';
-}, { passive: true });
+// ── NAV SCROLL + HERO PARALLAX SYSTEM ──
+(function () {
+  const nav        = document.querySelector('nav');
+  const heroBg     = document.querySelector('.hero-bg');
+  const heroDots   = document.getElementById('hero-dots');
+  const heroGrad   = document.querySelector('.hero-grad');
+  const heroContent= document.querySelector('.hero-content');
+  const hero       = document.querySelector('.hero');
+  let ticking = false;
+
+  // Cubic ease-out: fast start, slows near end
+  function easeOut(t) { return 1 - Math.pow(1 - t, 2); }
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const sy    = window.scrollY;
+        const heroH = hero ? hero.offsetHeight : window.innerHeight;
+        const p     = Math.min(sy / heroH, 1);   // raw 0→1
+        const pe    = easeOut(p);                  // eased 0→1
+
+        // 1 — Nav border
+        nav.style.borderBottomColor = sy > 10 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)';
+
+        if (!hero) { ticking = false; return; }
+
+        const isLight = document.documentElement.dataset.theme === 'light';
+
+        // 2 — BG video: zoom 1.00 → 1.22, darken
+        const scale  = 1 + pe * 0.22;
+        const filter = isLight
+          ? `brightness(${(0.9 - pe * 0.4).toFixed(3)}) saturate(0.2) opacity(0.28)`
+          : `brightness(${(0.55 - pe * 0.28).toFixed(3)})`;
+        heroBg.style.transform = `scale(${scale.toFixed(4)})`;
+        heroBg.style.filter    = filter;
+
+        // 3 — Dots: counter-zoom (drift inward slower) + fade
+        if (heroDots) {
+          heroDots.style.transform = `scale(${(1 + pe * 0.08).toFixed(4)})`;
+          heroDots.style.opacity   = (1 - pe * 0.7).toFixed(3);
+        }
+
+        // 4 — Gradient: punch up opacity as you scroll
+        if (heroGrad) {
+          heroGrad.style.opacity = (1 + pe * 0.6).toFixed(3);
+        }
+
+        // 5 — Content: parallax up at 35% of scroll speed + fade out bottom half
+        if (heroContent) {
+          const translateY = -(sy * 0.35);
+          const contentFade = p < 0.45 ? 1 : Math.max(0, 1 - (p - 0.45) / 0.45);
+          heroContent.style.transform = `translateY(${translateY.toFixed(1)}px)`;
+          heroContent.style.opacity   = contentFade.toFixed(3);
+        }
+
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
 
 /* ── HAMBURGER MENU ── */
 (function () {
@@ -1235,16 +1354,32 @@ window.addEventListener('scroll', () => {
 
   const geometry = new THREE.BufferGeometry();
   const positions = [], colors = [];
+
+  // Palette sampled from video: warm white, amber, orange, deep gold
+  const palette = [
+    [1.00, 0.88, 0.72],  // warm white/cream   ~40%
+    [1.00, 0.88, 0.72],
+    [1.00, 0.88, 0.72],
+    [1.00, 0.88, 0.72],
+    [1.00, 0.62, 0.18],  // amber              ~25%
+    [1.00, 0.62, 0.18],
+    [1.00, 0.62, 0.18],
+    [1.00, 0.42, 0.06],  // deep orange        ~20%
+    [1.00, 0.42, 0.06],
+    [1.00, 0.78, 0.28],  // gold               ~15%
+  ];
+
   for (let ix = 0; ix < AMOUNTX; ix++) {
     for (let iy = 0; iy < AMOUNTY; iy++) {
       positions.push(ix * SEPARATION - (AMOUNTX * SEPARATION) / 2, 0, iy * SEPARATION - (AMOUNTY * SEPARATION) / 2);
-      colors.push(0.9, 0.9, 0.9);
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      colors.push(c[0], c[1], c[2]);
     }
   }
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-  const material = new THREE.PointsMaterial({ size: 7, vertexColors: true, transparent: true, opacity: 0.55, sizeAttenuation: true });
+  const material = new THREE.PointsMaterial({ size: 7, vertexColors: true, transparent: true, opacity: 0.6, sizeAttenuation: true });
   scene.add(new THREE.Points(geometry, material));
 
   let count = 0;
