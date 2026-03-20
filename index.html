@@ -275,6 +275,29 @@
       letter-spacing: .1em;
       text-transform: uppercase;
     }
+    .copy-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; margin-left: 8px;
+      background: none; border: 1px solid var(--border);
+      border-radius: 5px; cursor: pointer; color: #888;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--text-faint); background: var(--bg2); }
+    .copy-btn.copied { color: #28c840; border-color: #28c840; }
+    .copy-btn svg { width: 13px; height: 13px; }
+    #copy-toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px);
+      background: #1a1a2e; border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; font-size: 13px; font-family: var(--ff-mono);
+      letter-spacing: 0.04em; padding: 8px 18px; border-radius: 8px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.18s, transform 0.18s;
+      z-index: 9999;
+    }
+    #copy-toast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
     pre {
       font-family: var(--ff-mono);
       font-size: 12px;
@@ -606,15 +629,7 @@
     /* ══════════════════════════════════════════════════
        HOW IT WORKS
     ══════════════════════════════════════════════════ */
-    #how { position: relative; overflow: hidden; }
-    #how-beams {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      z-index: 0; pointer-events: none;
-      filter: blur(10px);
-      opacity: 1;
-    }
-    #how .section-inner, #how .how-grid { position: relative; z-index: 1; }
+    #how { position: relative; }
     .how-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1230,7 +1245,6 @@
 
   <!-- ══ HOW IT WORKS ══════════════════════════════════════ -->
   <section id="how" class="section reveal">
-    <canvas id="how-beams"></canvas>
     <div class="section-inner">
       <div class="eyebrow">How It Works</div>
       <h2 class="sec-title">How It<br><strong>Works</strong></h2>
@@ -1846,80 +1860,47 @@
       obs.observe(gs);
     })();
 
-    // ─── HOW IT WORKS — BEAMS BACKGROUND ──────────────────────
+    // ─── COPY BUTTONS ──────────────────────────────────────────
     (function() {
-      const cv = document.getElementById('how-beams');
-      if (!cv) return;
-      const ctx = cv.getContext('2d');
-      let W, H, dpr = 1, beams = [], running = false;
+      const ICON = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="5" width="9" height="9" rx="1.5"/>
+        <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/>
+      </svg>`;
+      const CHECK = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3,8 6.5,12 13,4"/>
+      </svg>`;
 
-      function mkBeam() {
-        return {
-          x: Math.random() * (W * 1.3) - W * 0.15,
-          y: H * 0.2 + Math.random() * H * 0.9,
-          width: 2.5 + Math.random() * 4,
-          length: 150 + Math.random() * 250,
-          angle: -32 + (Math.random() - 0.5) * 12,
-          speed: 0.35 + Math.random() * 0.55,
-          opacity: 0.5 + Math.random() * 0.35,
-          hue: 218 + Math.random() * 40,
-          pulse: Math.random() * Math.PI * 2,
-          pulseSpeed: 0.018 + Math.random() * 0.022,
-        };
+      const toast = document.createElement('div');
+      toast.id = 'copy-toast';
+      toast.textContent = 'Copied!';
+      document.body.appendChild(toast);
+      let toastTimer;
+
+      function showToast() {
+        clearTimeout(toastTimer);
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 1600);
       }
 
-      function draw() {
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, W, H);
-        beams.forEach(b => {
-          const rad = b.angle * Math.PI / 180;
-          const dx = Math.sin(rad) * b.length;
-          const dy = -Math.cos(rad) * b.length;
-          const op = b.opacity * (0.8 + Math.sin(b.pulse) * 0.2);
-          const g = ctx.createLinearGradient(b.x, b.y, b.x + dx, b.y + dy);
-          g.addColorStop(0,   `hsla(${b.hue},88%,62%,0)`);
-          g.addColorStop(0.3, `hsla(${b.hue},88%,62%,${op * 0.6})`);
-          g.addColorStop(0.5, `hsla(${b.hue},88%,62%,${op})`);
-          g.addColorStop(0.7, `hsla(${b.hue},88%,62%,${op * 0.6})`);
-          g.addColorStop(1,   `hsla(${b.hue},88%,62%,0)`);
-          ctx.beginPath();
-          ctx.moveTo(b.x, b.y);
-          ctx.lineTo(b.x + dx, b.y + dy);
-          ctx.strokeStyle = g;
-          ctx.lineWidth = b.width;
-          ctx.stroke();
-          b.pulse += b.pulseSpeed;
-          b.y -= b.speed;
-          b.x += b.speed * 0.35;
-          if (b.y + b.length < -20) {
-            Object.assign(b, mkBeam());
-            b.y = H + 60;
-          }
+      document.querySelectorAll('.code-bar').forEach(bar => {
+        const wrap = bar.closest('.code-wrap');
+        if (!wrap) return;
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.innerHTML = ICON;
+        btn.title = 'Copy';
+        btn.addEventListener('click', () => {
+          const pre = wrap.querySelector('pre');
+          if (!pre) return;
+          navigator.clipboard.writeText(pre.innerText).then(() => {
+            btn.innerHTML = CHECK;
+            btn.classList.add('copied');
+            showToast();
+            setTimeout(() => { btn.innerHTML = ICON; btn.classList.remove('copied'); }, 1800);
+          });
         });
-        requestAnimationFrame(draw);
-      }
-
-      function resize() {
-        dpr = window.devicePixelRatio || 1;
-        const r = cv.parentElement.getBoundingClientRect();
-        W = r.width; H = r.height;
-        cv.width  = Math.round(W * dpr);
-        cv.height = Math.round(H * dpr);
-        cv.style.width  = W + 'px';
-        cv.style.height = H + 'px';
-      }
-
-      window.addEventListener('resize', resize);
-      const obs = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && !running) {
-          running = true;
-          resize();
-          for (let i = 0; i < 30; i++) beams.push(mkBeam());
-          draw();
-          obs.disconnect();
-        }
-      }, { threshold: 0.05 });
-      obs.observe(cv);
+        bar.appendChild(btn);
+      });
     })();
 
     // ─── GLOBE ANIMATION ───────────────────────────────────────
