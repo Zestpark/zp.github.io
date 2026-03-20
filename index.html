@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpaceRouter — Residential IP as a Service for AI Agents</title>
+  <meta name="description" content="Route your AI agent's traffic through real residential connections. HTTP & SOCKS5 proxy with geographic targeting, zero code changes, and intelligent routing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            space: '#0A0A0F',
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'fade-in': 'fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(40px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: #0A0A0F; color: white; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+    .animate-reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1); }
+    .animate-reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .delay-100 { transition-delay: 100ms; }
+    .delay-200 { transition-delay: 200ms; }
+    .delay-300 { transition-delay: 300ms; }
+    .delay-400 { transition-delay: 400ms; }
+    .delay-500 { transition-delay: 500ms; }
+
+    .hero-animate { opacity: 0; transform: translateY(40px); animation: heroFadeUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards; }
+    .hero-animate.d1 { animation-delay: 0ms; }
+    .hero-animate.d2 { animation-delay: 150ms; }
+    .hero-animate.d3 { animation-delay: 300ms; }
+    .hero-animate.d4 { animation-delay: 450ms; }
+    @keyframes heroFadeUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .scroll-indicator { opacity: 0; animation: fadeIn 1s ease forwards 600ms; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .section-divider { position: absolute; top: 0; left: 1.5rem; right: 1.5rem; height: 1px; background: rgba(255,255,255,0.06); }
+    @media (min-width: 768px) {
+      .section-divider { left: 3rem; right: 3rem; }
+    }
+
+    .gap-px-grid { gap: 1px; background: rgba(255,255,255,0.06); }
+    .gap-px-grid > * { background: #000; }
+
+    pre { font-family: 'JetBrains Mono', monospace; }
+    code { font-family: 'JetBrains Mono', monospace; }
+
+    .tab-btn { flex-shrink: 0; padding: 0.875rem 1.25rem; font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; transition: all 0.2s; border-bottom: 1px solid transparent; color: rgba(255,255,255,0.3); white-space: nowrap; }
+    .tab-btn:hover { color: rgba(255,255,255,0.6); }
+    .tab-btn.active { color: white; border-bottom-color: white; background: rgba(255,255,255,0.03); }
+
+    .copy-btn { position: absolute; top: 1rem; right: 1rem; padding: 0.5rem; color: rgba(255,255,255,0.2); transition: color 0.2s; background: none; border: none; cursor: pointer; }
+    .copy-btn:hover { color: rgba(255,255,255,0.6); }
+
+    .roadmap-item { display: grid; grid-template-columns: auto 1fr; gap: 1rem 2rem; padding: 2rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.3s; }
+    @media (min-width: 768px) { .roadmap-item { grid-template-columns: 60px 200px 1fr; gap: 1rem 2rem; } }
+    .roadmap-item:hover { background: rgba(255,255,255,0.02); }
+
+    .roadmap-status { display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.625rem; letter-spacing: 0.15em; text-transform: uppercase; font-family: 'JetBrains Mono', monospace; color: rgba(255,255,255,0.6); }
+    .roadmap-status.live::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80; }
+    .roadmap-status.next::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); }
+    .roadmap-status.upcoming::before { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.12); }
+
+    .feature-grid { display: grid; gap: 1px; background: rgba(255,255,255,0.06); }
+    @media (min-width: 640px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 1024px) { .feature-grid { grid-template-columns: 1fr 1fr 1fr; } }
+    .feature-grid > * { background: #000; }
+
+    .arch-step { display: grid; grid-template-columns: auto 1fr; gap: 1rem; padding: 2rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.3s; }
+    @media (min-width: 768px) { .arch-step { grid-template-columns: 60px 200px 1fr; gap: 2rem; } }
+    .arch-step:hover { background: rgba(255,255,255,0.02); }
+
+    .arch-components { display: grid; gap: 1px; background: rgba(255,255,255,0.06); margin-top: 4rem; }
+    @media (min-width: 768px) { .arch-components { grid-template-columns: repeat(3, 1fr); } }
+    .arch-components > * { background: #000; }
+
+    canvas { display: block; }
+
+    /* Text shimmer with color — motion-primitives */
+    @keyframes text-shimmer {
+      from { background-position: 100% center; }
+      to   { background-position: 0% center; }
+    }
+    .shimmer-text {
+      background-image:
+        linear-gradient(
+          90deg,
+          transparent 0%,
+          transparent calc(50% - 80px),
+          #60a5fa    calc(50% - 30px),
+          #c084fc    50%,
+          #60a5fa    calc(50% + 30px),
+          transparent calc(50% + 80px),
+          transparent 100%
+        ),
+        linear-gradient(#fff, #fff);
+      background-size: 250% 100%, auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      background-repeat: no-repeat, padding-box;
+      /* Combine shimmer + fade-up so neither overrides the other */
+      opacity: 0;
+      transform: translateY(40px);
+      animation:
+        heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 150ms forwards,
+        text-shimmer 3s linear 150ms infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
+<section id="home" class="relative min-h-screen flex flex-col bg-black overflow-hidden">
+  <!-- Particle canvas -->
+  <canvas id="particles" class="absolute inset-0 w-full h-full" style="pointer-events:none"></canvas>
+
+  <!-- Background image -->
+  <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://mgx-backend-cdn.metadl.com/generate/images/1030921/2026-03-15/7a390a52-466c-429f-8577-c25642f87f6a.png'); opacity:0.2"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black"></div>
+
+  <!-- Navbar -->
+  <nav class="relative z-20 flex items-center justify-between px-6 md:px-12 py-6">
+    <div class="flex items-center gap-2.5">
+      <img src="https://www.figma.com/api/mcp/asset/45832911-102c-46ef-b9ea-843b24b2a056" alt="" style="height:22px;width:auto;display:block;" />
+      <span class="text-white font-bold text-xl tracking-[0.2em] uppercase">SpaceRouter</span>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#features" class="text-xs font-medium tracking-[0.15em] uppercase text-white/60 hover:text-white transition-colors duration-300">Features</a>
+      <a href="#how-it-works" class="text-xs font-medium tracking-[0.15em] uppercase text-white/60 hover:text-white transition-colors duration-300">How It Works</a>
+      <a href="#usage" class="text-xs font-medium tracking-[0.15em] uppercase text-white/60 hover:text-white transition-colors duration-300">Usage</a>
+      <a href="#roadmap" class="text-xs font-medium tracking-[0.15em] uppercase text-white/60 hover:text-white transition-colors duration-300">Roadmap</a>
+    </div>
+    <a href="#get-started" class="text-xs font-semibold tracking-[0.15em] uppercase text-black bg-white px-5 py-2.5 hover:bg-white/90 transition-colors duration-300">Get Started</a>
+  </nav>
+
+  <!-- Hero content -->
+  <div class="relative z-10 flex-1 flex flex-col items-center justify-center px-6 text-center">
+    <p class="hero-animate d1 text-xs md:text-sm font-medium tracking-[0.3em] uppercase text-white/50 mb-8">Residential IP as a Service</p>
+    <h1 class="shimmer-text text-4xl sm:text-5xl md:text-6xl lg:text-[80px] font-bold tracking-tight mb-8 leading-[1.05] max-w-4xl">
+      THE INTERNET,<br>THROUGH REAL HOMES
+    </h1>
+    <p class="hero-animate d3 text-base md:text-lg text-white/50 max-w-2xl mx-auto mb-12 leading-relaxed">
+      Many websites block datacenter IPs. SpaceRouter routes your agent's traffic through real residential connections — transparently, with zero code changes beyond setting a proxy URL.
+    </p>
+    <div class="hero-animate d4 w-full max-w-xl mx-auto">
+      <div class="bg-white/[0.03] backdrop-blur-sm border border-white/[0.06] p-5 text-left">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-2.5 h-2.5 rounded-full bg-white/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-white/20"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-white/20"></div>
+          <span class="ml-2 text-[10px] tracking-[0.15em] uppercase text-white/30 font-mono">terminal</span>
+        </div>
+        <code class="text-sm font-mono text-white/70 leading-relaxed">
+          <span class="text-white/40">$</span> <span class="text-white">curl</span> <span class="text-white/50">-x</span> <span class="text-white/80">http://YOUR_API_KEY@gateway.spacerouter.io:8080</span> <span class="text-white/30">\</span><br>
+          <span class="text-white/50">&nbsp;&nbsp;https://httpbin.org/ip</span>
+        </code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll indicator -->
+  <div class="relative z-10 flex justify-center pb-12">
+    <div class="scroll-indicator flex flex-col items-center gap-2">
+      <span class="text-[10px] tracking-[0.2em] uppercase text-white/30">Scroll</span>
+      <div class="w-px h-8 bg-gradient-to-b from-white/30 to-transparent"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ PROBLEM ═══════════════════════════════════ -->
+<section class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">The Problem</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-8 leading-[1.1] max-w-3xl">AI AGENTS ARE NOT TRADITIONAL BOTS</h2>
+    <p class="animate-reveal delay-200 text-base md:text-lg text-white/50 max-w-2xl leading-relaxed mb-20">
+      Unlike simple web scrapers, they navigate websites the way humans do — clicking, scrolling, and interacting with dynamic content. But getting them treated like humans is another challenge entirely. Residential IPs are a critical piece of that puzzle.
+    </p>
+    <div class="gap-px-grid grid md:grid-cols-3">
+      <div class="animate-reveal delay-100 bg-black p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">01</p>
+        <h3 class="text-lg font-semibold text-white mb-3 tracking-tight">DATACENTER IPS GET BLOCKED</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Websites detect and block datacenter IP ranges. Your agent gets CAPTCHAs, rate limits, or outright bans before it can do anything useful.</p>
+      </div>
+      <div class="animate-reveal delay-200 bg-black p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">02</p>
+        <h3 class="text-lg font-semibold text-white mb-3 tracking-tight">BOT DETECTION EVOLVES</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Modern anti-bot systems fingerprint connections. IP type is a primary signal — datacenter IPs are flagged instantly, blocking your agent's access.</p>
+      </div>
+      <div class="animate-reveal delay-300 bg-black p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">03</p>
+        <h3 class="text-lg font-semibold text-white mb-3 tracking-tight">GEO-RESTRICTIONS APPLY</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Content varies by region. Without residential IPs in the right geography, your agent sees different — or no — content at all.</p>
+      </div>
+    </div>
+
+    <!-- Solution subsection -->
+    <div class="animate-reveal delay-100 mt-20 border-t border-white/[0.06] pt-12">
+      <div class="flex flex-col md:flex-row items-start gap-12">
+        <div class="flex-1">
+          <p class="text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">The Solution</p>
+          <h3 class="text-2xl md:text-3xl font-bold text-white mb-4 tracking-tight leading-tight">RESIDENTIAL IPS WITH AGENT-NATIVE TOOLING</h3>
+          <p class="text-sm md:text-base text-white/40 leading-relaxed max-w-lg">
+            Skill, CLI, SDK, API — every interface your agent needs. Standard proxy protocol means zero code changes. Just set a proxy URL and your agent's traffic flows through real residential connections.
+          </p>
+        </div>
+        <div class="flex-shrink-0 w-full md:w-64 h-48 md:h-64 overflow-hidden">
+          <canvas id="warp-canvas" class="w-full h-full" style="display:block"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ FEATURES ═══════════════════════════════════ -->
+<section id="features" class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">Features</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.1] max-w-3xl">EVERYTHING YOUR AGENT NEEDS</h2>
+    <p class="animate-reveal delay-200 text-base md:text-lg text-white/50 max-w-xl leading-relaxed mb-20">Built from the ground up for AI agent workflows. No compromises.</p>
+
+    <div class="feature-grid">
+      <div class="animate-reveal delay-100 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">01</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">HTTP &amp; SOCKS5</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Dual-protocol proxy support. HTTP on port 8080, SOCKS5 on port 1080. Same residential node pool behind both.</p>
+      </div>
+      <div class="animate-reveal delay-150 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">02</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">GEOGRAPHIC TARGETING</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Route requests through specific countries using ISO 3166-1 codes. Need a Korean IP? Set <code class="text-white/60">X-SpaceRouter-Region: KR</code>.</p>
+      </div>
+      <div class="animate-reveal delay-200 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">03</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">ZERO CODE CHANGES</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Standard proxy protocol. Just set your proxy URL and authenticate with your API key. Works with any HTTP client.</p>
+      </div>
+      <div class="animate-reveal delay-100 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">04</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">INTELLIGENT ROUTING</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Health-scored node selection with weighted preferences. Requests route through the best available node automatically.</p>
+      </div>
+      <div class="animate-reveal delay-200 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">05</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">SECURITY BUILT IN</h3>
+        <p class="text-sm text-white/40 leading-relaxed">mTLS between components, SSRF protection, DNS rebinding prevention, rate limiting, and full header stripping before reaching target sites.</p>
+      </div>
+      <div class="animate-reveal delay-300 p-8 md:p-10 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">06</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">REQUEST TRACING</h3>
+        <p class="text-sm text-white/40 leading-relaxed">Every request gets a unique <code class="text-white/60">X-SpaceRouter-Request-Id</code> for end-to-end debugging across the entire routing path.</p>
+      </div>
+      <div class="animate-reveal delay-100 p-8 md:p-10 h-full md:col-span-3">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-4">07</p>
+        <h3 class="text-base font-semibold text-white mb-3 tracking-tight">DISTRIBUTED NODES</h3>
+        <p class="text-sm text-white/40 leading-relaxed max-w-xl">Home Nodes run on residential machines with automatic NAT traversal via UPnP — no manual router configuration needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ HOW IT WORKS ═══════════════════════════════════ -->
+<section id="how-it-works" class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">How It Works</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.1] max-w-3xl">FROM AGENT TO TARGET IN 5 STEPS</h2>
+    <p class="animate-reveal delay-200 text-base md:text-lg text-white/50 max-w-xl leading-relaxed mb-20">The response flows back through the same path. The target only ever sees a residential IP.</p>
+
+    <!-- Architecture diagram image -->
+    <div class="animate-reveal delay-100 relative mb-20 -mx-6 md:-mx-12 overflow-hidden">
+      <img src="https://mgx-backend-cdn.metadl.com/generate/images/1030921/2026-03-15/669febe6-036d-46ee-878f-ec594594034f.png" alt="Architecture Flow" class="w-full object-cover opacity-80" style="max-height: 400px; object-fit: cover;" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/30"></div>
+      <div class="absolute bottom-6 left-6 md:left-12">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/40 mb-2">Architecture Flow</p>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div>
+      <div class="arch-step animate-reveal delay-100">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono">01</p>
+        <div class="md:col-start-2">
+          <p class="text-xs font-semibold text-white tracking-[0.1em] mb-1">YOUR AI AGENT</p>
+          <p class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-mono text-white/60 mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>HTTP or SOCKS5
+          </p>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">Your agent sends a request through the Proxy Gateway using standard proxy protocol.</p>
+      </div>
+      <div class="arch-step animate-reveal delay-150">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono">02</p>
+        <div class="md:col-start-2">
+          <p class="text-xs font-semibold text-white tracking-[0.1em] mb-1">PROXY GATEWAY</p>
+          <p class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-mono text-white/60 mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>Authentication
+          </p>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">The Gateway validates your API key and checks rate limits.</p>
+      </div>
+      <div class="arch-step animate-reveal delay-200">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono">03</p>
+        <div class="md:col-start-2">
+          <p class="text-xs font-semibold text-white tracking-[0.1em] mb-1">COORDINATION API</p>
+          <p class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-mono text-white/60 mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>mTLS
+          </p>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">Selects the best Home Node based on health, geography, and IP type preference.</p>
+      </div>
+      <div class="arch-step animate-reveal delay-250">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono">04</p>
+        <div class="md:col-start-2">
+          <p class="text-xs font-semibold text-white tracking-[0.1em] mb-1">HOME NODE</p>
+          <p class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-mono text-white/60 mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>Residential IP
+          </p>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">Forwards your request from its residential IP to the target website.</p>
+      </div>
+      <div class="arch-step animate-reveal delay-300">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 font-mono">05</p>
+        <div class="md:col-start-2">
+          <p class="text-xs font-semibold text-white tracking-[0.1em] mb-1">TARGET WEBSITE</p>
+          <p class="inline-flex items-center gap-1.5 text-[10px] tracking-[0.15em] uppercase font-mono text-white/60 mb-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>Normal Response
+          </p>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">Sees a residential IP, serves content normally. The target only ever sees a residential IP.</p>
+      </div>
+    </div>
+
+    <!-- Components -->
+    <div class="arch-components animate-reveal delay-100 mt-20">
+      <div class="p-8 md:p-10">
+        <h4 class="text-xs font-semibold text-white tracking-[0.1em] mb-3">Proxy Gateway</h4>
+        <p class="text-sm text-white/40 leading-relaxed">Agent-facing entry point. Handles HTTP and SOCKS5 proxy protocols, authentication, rate limiting, and route selection.</p>
+      </div>
+      <div class="p-8 md:p-10">
+        <h4 class="text-xs font-semibold text-white tracking-[0.1em] mb-3">Coordination API</h4>
+        <p class="text-sm text-white/40 leading-relaxed">Central control plane. Manages the node registry, API keys, IP classification (via IPinfo.io), and health-based routing.</p>
+      </div>
+      <div class="p-8 md:p-10">
+        <h4 class="text-xs font-semibold text-white tracking-[0.1em] mb-3">Home Node</h4>
+        <p class="text-sm text-white/40 leading-relaxed">Residential exit point. Runs on home machines behind NAT, auto-configures port forwarding via UPnP, and proxies traffic from its residential IP.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ USAGE ═══════════════════════════════════ -->
+<section id="usage" class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">Usage Examples</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.1] max-w-3xl">UP AND RUNNING IN SECONDS</h2>
+    <p class="animate-reveal delay-200 text-base md:text-lg text-white/50 max-w-xl leading-relaxed mb-16">Standard proxy protocol. Works with any HTTP client, SDK, or CLI tool.</p>
+
+    <!-- Code tabs -->
+    <div class="animate-reveal delay-300 border border-white/[0.06]">
+      <div class="flex overflow-x-auto border-b border-white/[0.06]" id="code-tabs">
+        <button class="tab-btn active" data-tab="curl-http">CURL (HTTP)</button>
+        <button class="tab-btn" data-tab="curl-socks5">CURL (SOCKS5)</button>
+        <button class="tab-btn" data-tab="curl-geo">CURL (GEO)</button>
+        <button class="tab-btn" data-tab="python">PYTHON</button>
+        <button class="tab-btn" data-tab="javascript">JAVASCRIPT</button>
+      </div>
+      <div class="relative p-6 md:p-8">
+        <button class="copy-btn" id="copy-btn" title="Copy code">
+          <svg id="copy-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg id="check-icon" class="hidden" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 18 4 13"></polyline></svg>
+        </button>
+        <pre class="overflow-x-auto"><code id="code-display" class="text-sm font-mono text-white/60 leading-relaxed whitespace-pre"></code></pre>
+      </div>
+    </div>
+
+    <!-- SDK cards -->
+    <div class="gap-px-grid grid sm:grid-cols-2 mt-12">
+      <div class="animate-reveal delay-100 p-6 md:p-8 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-3">Python SDK</p>
+        <code class="text-sm font-mono text-white/60">pip install spacerouter</code>
+        <p class="text-[10px] tracking-[0.15em] uppercase text-white/20 mt-3">Sync + Async · HTTP + SOCKS5</p>
+      </div>
+      <div class="animate-reveal delay-200 p-6 md:p-8 h-full">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30 mb-3">JavaScript SDK</p>
+        <code class="text-sm font-mono text-white/60">npm install @spacenetwork/spacerouter</code>
+        <p class="text-[10px] tracking-[0.15em] uppercase text-white/20 mt-3">HTTP Proxy · TypeScript Support</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ ROADMAP ═══════════════════════════════════ -->
+<section id="roadmap" class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">Roadmap</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-6 leading-[1.1] max-w-3xl">BUILDING THE AGENT NETWORK</h2>
+    <p class="animate-reveal delay-200 text-base md:text-lg text-white/50 max-w-2xl leading-relaxed mb-8">
+      AI agents are the new users of the internet. SpaceRouter is their network — starting with residential IPs and scaling to a fully decentralized, token-incentivized routing layer.
+    </p>
+    <p class="animate-reveal delay-300 text-sm text-white/30 max-w-2xl leading-relaxed mb-20">
+      Inspired by Tor, powered by Spacecoin, destined to scale across the globe and into space through Space Network, a decentralized satellite telecommunications network.
+    </p>
+
+    <!-- Roadmap items -->
+    <div>
+      <div class="roadmap-item animate-reveal delay-100">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">1.1</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white tracking-[0.05em] mb-2">MVP LAUNCH</p>
+          <span class="roadmap-status live">LIVE</span>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">CLI setup, Python &amp; JS SDKs, HTTP &amp; SOCKS5 proxy, geographic targeting.</p>
+      </div>
+      <div class="roadmap-item animate-reveal delay-150">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">1.2</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white tracking-[0.05em] mb-2">PROXY NODES + STAKING</p>
+          <span class="roadmap-status next">NEXT</span>
+        </div>
+        <p class="text-sm text-white/40 leading-relaxed md:col-start-3">Spacecoin staking, on-chain reputation for node operators, incentive payouts.</p>
+      </div>
+      <div class="roadmap-item animate-reveal delay-200">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">1.3</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white/50 tracking-[0.05em] mb-2">PAYMENTS</p>
+          <span class="roadmap-status upcoming">UPCOMING</span>
+        </div>
+        <p class="text-sm text-white/30 leading-relaxed md:col-start-3">Spacecoin payment settlement with cryptographic receipts.</p>
+      </div>
+      <div class="roadmap-item animate-reveal delay-250">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">2</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white/50 tracking-[0.05em] mb-2">ENTRY NODES</p>
+          <span class="roadmap-status upcoming">UPCOMING</span>
+        </div>
+        <p class="text-sm text-white/30 leading-relaxed md:col-start-3">Distributed entry nodes replace the cloud gateway. Same SDK interface.</p>
+      </div>
+      <div class="roadmap-item animate-reveal delay-300">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">3</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white/50 tracking-[0.05em] mb-2">MULTI-HOP ROUTING</p>
+          <span class="roadmap-status upcoming">UPCOMING</span>
+        </div>
+        <p class="text-sm text-white/30 leading-relaxed md:col-start-3">Three-hop circuits (guard → middle → exit) for full privacy.</p>
+      </div>
+      <div class="roadmap-item animate-reveal delay-350" style="border-bottom: none;">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/20 font-mono self-start pt-1">4</p>
+        <div class="md:col-start-2">
+          <p class="text-sm font-semibold text-white/50 tracking-[0.05em] mb-2">FULL DECENTRALIZATION</p>
+          <span class="roadmap-status upcoming">UPCOMING</span>
+        </div>
+        <p class="text-sm text-white/30 leading-relaxed md:col-start-3">No central coordination. Agents read the node registry from the blockchain. On-chain payments and reputation.</p>
+      </div>
+    </div>
+
+    <!-- Space Network vision image -->
+    <div class="animate-reveal delay-100 mt-20 -mx-6 md:-mx-12 overflow-hidden relative">
+      <img src="https://mgx-backend-cdn.metadl.com/generate/images/1030921/2026-03-15/0eac3e29-e532-4d0b-b4ba-55c09d492051.png" alt="Space Network Vision" class="w-full object-cover opacity-40" style="max-height: 300px; object-fit: cover;" />
+      <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/30"></div>
+      <div class="absolute bottom-6 left-6 md:left-12">
+        <p class="text-[10px] tracking-[0.3em] uppercase text-white/30">Space Network Vision</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ GET STARTED ═══════════════════════════════════ -->
+<section id="get-started" class="relative bg-black py-24 md:py-40">
+  <div class="section-divider"></div>
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <p class="animate-reveal text-[10px] md:text-xs font-medium tracking-[0.3em] uppercase text-white/40 mb-6">Get Started</p>
+    <h2 class="animate-reveal delay-100 text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-white mb-20 leading-[1.1]">TWO STEPS. THAT'S IT.</h2>
+
+    <div class="gap-px-grid grid md:grid-cols-2">
+      <div class="animate-reveal delay-100 p-8 md:p-12 h-full">
+        <div class="flex items-center gap-4 mb-6">
+          <span class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-mono text-white/60">01</span>
+          <h3 class="text-sm font-semibold text-white tracking-[0.1em]">CREATE AN API KEY</h3>
+        </div>
+        <div class="bg-white/[0.02] border border-white/[0.06] p-5 overflow-x-auto">
+          <code class="text-xs font-mono text-white/50 leading-relaxed whitespace-pre">curl -X POST https://coordination.spacerouter.org/api-keys \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-agent"}'</code>
+        </div>
+      </div>
+      <div class="animate-reveal delay-200 p-8 md:p-12 h-full">
+        <div class="flex items-center gap-4 mb-6">
+          <span class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center text-[10px] font-mono text-white/60">02</span>
+          <h3 class="text-sm font-semibold text-white tracking-[0.1em]">USE THE PROXY</h3>
+        </div>
+        <div class="bg-white/[0.02] border border-white/[0.06] p-5 overflow-x-auto">
+          <code class="text-xs font-mono text-white/50 leading-relaxed whitespace-pre">curl -x http://YOUR_API_KEY@gateway.spacerouter.org:8080 \
+  https://httpbin.org/ip</code>
+        </div>
+        <p class="mt-4 text-sm text-white/30">Your request is now routed through a residential IP.</p>
+      </div>
+    </div>
+
+    <div class="animate-reveal delay-300 mt-16 text-center">
+      <a href="#" class="inline-block text-sm font-semibold tracking-[0.15em] uppercase text-black bg-white px-10 py-4 hover:bg-white/90 transition-colors duration-300">Start Building →</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
+<footer class="relative bg-black py-12 border-t border-white/[0.06]">
+  <div class="max-w-5xl mx-auto px-6 md:px-12">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+      <div>
+        <span class="text-sm font-bold tracking-[0.2em] uppercase text-white">SpaceRouter</span>
+        <p class="text-[10px] tracking-[0.15em] uppercase text-white/20 mt-1">A Space Network Product</p>
+      </div>
+      <div class="flex items-center gap-8">
+        <a href="#" class="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 hover:text-white/60 transition-colors duration-300">Documentation</a>
+        <a href="#" class="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 hover:text-white/60 transition-colors duration-300">SDK on GitHub</a>
+        <a href="#" class="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 hover:text-white/60 transition-colors duration-300">Community</a>
+      </div>
+    </div>
+    <div class="mt-8 pt-8 border-t border-white/[0.04] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <p class="text-[10px] tracking-[0.1em] text-white/15">SpaceRouter © 2026. Built by Space Network.</p>
+      <p class="text-[10px] tracking-[0.1em] text-white/15">Powered by Spacecoin</p>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+// ─── Particle canvas ───
+(function() {
+  const canvas = document.getElementById('particles');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let animId;
+  const particles = [];
+
+  function resize() {
+    canvas.width = canvas.offsetWidth * devicePixelRatio;
+    canvas.height = canvas.offsetHeight * devicePixelRatio;
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 120; i++) {
+    particles.push({
+      x: Math.random() * canvas.offsetWidth,
+      y: Math.random() * canvas.offsetHeight,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+      size: Math.random() * 1.5 + 0.3,
+      alpha: Math.random() * 0.6 + 0.1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+    const W = canvas.offsetWidth, H = canvas.offsetHeight;
+    particles.forEach((p, i) => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+      ctx.fill();
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = p.x - particles[j].x, dy = p.y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(255,255,255,${0.03 * (1 - dist/100)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    });
+    animId = requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+
+// ─── Warp Drive Shader (raw WebGL, no Three.js) ───
+(function () {
+  const canvas = document.getElementById('warp-canvas');
+  if (!canvas) return;
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+
+  const vert = `
+    attribute vec2 a_pos;
+    void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+  `;
+  const frag = `
+    precision highp float;
+    uniform vec2 iResolution;
+    uniform float iTime;
+    uniform vec2 iMouse;
+    void main() {
+      vec2 uv    = (gl_FragCoord.xy - 0.5 * iResolution.xy) / iResolution.y;
+      vec2 mouse = (iMouse          - 0.5 * iResolution.xy) / iResolution.y;
+      float t = iTime * 0.5;
+      uv -= mouse;
+      float r = length(uv) * 0.8;
+      vec3 col = vec3(0.0);
+      float off = 0.01;
+      col.r = pow(fract(0.5 / length(uv + vec2(off, 0.0)) + t * 2.0), 15.0);
+      col.g = pow(fract(0.5 / length(uv)                  + t * 2.0), 15.0);
+      col.b = pow(fract(0.5 / length(uv - vec2(off, 0.0)) + t * 2.0), 15.0);
+      col *= smoothstep(0.0, 0.1, r);
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, compile(gl.VERTEX_SHADER, vert));
+  gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const uTime = gl.getUniformLocation(prog, 'iTime');
+  const uRes  = gl.getUniformLocation(prog, 'iResolution');
+  const uMouse = gl.getUniformLocation(prog, 'iMouse');
+
+  let mx = 0.5, my = 0.5;
+  window.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    mx = e.clientX - rect.left;
+    my = canvas.height - (e.clientY - rect.top);
+  });
+
+  function resize() {
+    canvas.width  = canvas.clientWidth  * devicePixelRatio;
+    canvas.height = canvas.clientHeight * devicePixelRatio;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    mx = canvas.width  * 0.5;
+    my = canvas.height * 0.5;
+  }
+  resize();
+  new ResizeObserver(resize).observe(canvas);
+
+  const t0 = performance.now();
+  (function loop() {
+    const t = (performance.now() - t0) / 1000;
+    gl.uniform1f(uTime, t);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform2f(uMouse, mx, my);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(loop);
+  })();
+})();
+
+// ─── Scroll reveal ───
+(function() {
+  const els = document.querySelectorAll('.animate-reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+  els.forEach(el => io.observe(el));
+})();
+
+
+// ─── Code tabs ───
+(function() {
+  const codes = {
+    'curl-http': `curl -x http://sr_live_YOUR_API_KEY@gateway.spacerouter.io:8080 \\
+  https://httpbin.org/ip`,
+    'curl-socks5': `curl --socks5 gateway.spacerouter.io:1080 \\
+  --proxy-user sr_live_YOUR_API_KEY: \\
+  https://httpbin.org/ip`,
+    'curl-geo': `curl -x http://sr_live_YOUR_API_KEY@gateway.spacerouter.io:8080 \\
+  -H "X-SpaceRouter-Region: KR" \\
+  https://httpbin.org/ip`,
+    'python': `from spacerouter import AsyncSpaceRouter
+
+async with AsyncSpaceRouter(
+    api_key="sr_live_YOUR_KEY",
+    gateway_url="https://gateway.spacerouter.io:8080",
+) as router:
+    response = await router.get(
+        "https://target-website.com/data",
+        region="KR",
+        ip_type="residential",
+    )
+    print(response.json())`,
+    'javascript': `import { SpaceRouter } from "spacerouter";
+
+const router = new SpaceRouter({
+  apiKey: "sr_live_YOUR_KEY",
+  gatewayUrl: "https://gateway.spacerouter.io:8080",
+});
+
+const response = await router.get("https://httpbin.org/ip", {
+  region: "KR",
+  ipType: "residential",
+});
+console.log(response.body);`
+  };
+
+  let activeTab = 'curl-http';
+  const display = document.getElementById('code-display');
+  const tabs = document.querySelectorAll('.tab-btn');
+  const copyBtn = document.getElementById('copy-btn');
+  const copyIcon = document.getElementById('copy-icon');
+  const checkIcon = document.getElementById('check-icon');
+
+  function setTab(key) {
+    activeTab = key;
+    display.textContent = codes[key];
+    tabs.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === key);
+    });
+  }
+
+  setTab('curl-http');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => setTab(btn.dataset.tab));
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(codes[activeTab]).then(() => {
+      copyIcon.classList.add('hidden');
+      checkIcon.classList.remove('hidden');
+      setTimeout(() => {
+        copyIcon.classList.remove('hidden');
+        checkIcon.classList.add('hidden');
+      }, 2000);
+    });
+  });
+})();
+</script>
+</body>
+</html>
