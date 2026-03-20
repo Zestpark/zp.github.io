@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpaceRouter — Residential IP as a Service for AI Agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:     #000000;
+      --off-black: #1e1f20;
+      --dark-gray: #272727;
+      --gray-med:  #bbbbbb;
+      --gray-dim:  #666666;
+      --eggshell:  #f1f4f4;
+      --white:     #ffffff;
+      --border:    rgba(255,255,255,0.09);
+      --font: 'Outfit', sans-serif;
+      --font-display: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    [data-theme="light"] {
+      --black:     #f4f4f2;
+      --off-black: #eaeae7;
+      --dark-gray: #e0e0dc;
+      --gray-med:  #444444;
+      --gray-dim:  #888888;
+      --eggshell:  #1a1a1a;
+      --white:     #0a0a0a;
+      --border:    rgba(0,0,0,0.09);
+    }
+    /* ── LIGHT MODE OVERRIDES ── */
+    [data-theme="light"] nav { background: rgba(244,244,242,0.92); border-bottom-color: rgba(0,0,0,0.08); }
+
+    /* Hero: desaturate image and add a strong cream wash so text stays legible */
+    [data-theme="light"] .hero-bg { filter: brightness(1.05) saturate(0.25) opacity(0.35); }
+    [data-theme="light"] .hero-grad {
+      background: linear-gradient(to bottom,
+        rgba(244,244,242,0.72) 0%,
+        rgba(244,244,242,0.55) 45%,
+        rgba(244,244,242,0.95) 100%);
+    }
+    [data-theme="light"] #hero-dots canvas { filter: invert(1); }
+    [data-theme="light"] .hero-sub { color: #555555; }
+
+    /* Fullscreen menu: keep always dark for drama */
+    [data-theme="light"] .nav-menu { background: #111111; }
+    [data-theme="light"] .nav-menu-links a { color: rgba(255,255,255,0.25); }
+    [data-theme="light"] .nav-menu-links a:hover { color: #ffffff; }
+
+    /* Case cards */
+    [data-theme="light"] .case-photo { background: #d8d9d6; }
+    [data-theme="light"] .case-photo svg { stroke: rgba(0,0,0,0.45) !important; fill: none !important; }
+    [data-theme="light"] .case-card:hover { background: #dedede; }
+    [data-theme="light"] .case-card:hover .case-photo svg { opacity: 0.65; }
+    [data-theme="light"] .case-logo-img { filter: brightness(0); }
+    [data-theme="light"] .case-cta { border-bottom-color: rgba(0,0,0,0.25); }
+
+    /* Feature/use-case cards hover fix (hardcoded dark bg) */
+    [data-theme="light"] .why-feat:hover { background: #d5d5d2; }
+    [data-theme="light"] .uc-card:hover { background: #d8d8d5; border-color: rgba(0,0,0,0.14); }
+    [data-theme="light"] .stack-card:hover { border-color: rgba(0,0,0,0.18); }
+    [data-theme="light"] .eco-chip:hover { border-color: rgba(0,0,0,0.22); color: var(--white); }
+    [data-theme="light"] .social-btn:hover { border-color: rgba(0,0,0,0.25); background: rgba(0,0,0,0.04); }
+
+    /* Nav links hover */
+    [data-theme="light"] .nav-links a:hover { background: rgba(0,0,0,0.05); color: var(--white); }
+
+    /* Buttons */
+    [data-theme="light"] .btn-primary { background: #0a0a0a; color: #f4f4f2; }
+    [data-theme="light"] .btn-primary:hover { background: #2a2a2a; color: #f4f4f2; }
+    [data-theme="light"] .btn.btn-secondary { border-color: rgba(0,0,0,0.2); color: var(--white); }
+    [data-theme="light"] .btn.btn-secondary:hover { background: rgba(0,0,0,0.06); }
+
+    /* Timeline */
+    [data-theme="light"] .timeline::before { background: rgba(0,0,0,0.12); }
+    [data-theme="light"] .tl-dot { border-color: rgba(0,0,0,0.25); background: var(--black); }
+    [data-theme="light"] .tl-dot.next { background: #888; border-color: #888; }
+    [data-theme="light"] .tl-item.is-live { background: linear-gradient(120deg, rgba(99,102,241,0.12) 0%, rgba(59,130,246,0.06) 50%, transparent 100%); border-color: rgba(99,102,241,0.22); }
+
+    /* Scrollbar */
+    [data-theme="light"] ::-webkit-scrollbar-thumb { background: #bbb; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--black); }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ── PIXEL ARROW (site's custom icon) ── */
+    .arrow-icon {
+      display: inline-block; width: 14px; height: 21px; flex-shrink: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 74px;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+    .nav-logo {
+      font-size: 1.05rem; font-weight: 700; letter-spacing: 0.05em;
+      color: var(--white); display: flex; align-items: center; gap: 9px;
+    }
+    .nav-logo svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-links {
+      display: flex; align-items: center; gap: 0; list-style: none;
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .nav-links a {
+      font-size: 0.875rem; font-weight: 400; color: var(--gray-med);
+      padding: 8px 16px; border-radius: 6px;
+      transition: color 0.18s, background 0.18s; display: block;
+    }
+    .nav-links a:hover { color: var(--white); background: rgba(255,255,255,0.05); }
+
+    /* ── HAMBURGER ── */
+    .ham-btn {
+      background: none; border: none; cursor: pointer; padding: 8px;
+      display: flex; flex-direction: column; gap: 5px; align-items: flex-end;
+    }
+    .ham-btn span {
+      display: block; height: 1.5px; background: var(--white);
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.25s, width 0.25s;
+    }
+    .ham-btn span:nth-child(1) { width: 22px; }
+    .ham-btn span:nth-child(2) { width: 14px; }
+    .ham-btn span:nth-child(3) { width: 22px; }
+    .ham-btn.open span:nth-child(1) { width: 22px; transform: translateY(6.5px) rotate(45deg); }
+    .ham-btn.open span:nth-child(2) { opacity: 0; }
+    .ham-btn.open span:nth-child(3) { width: 22px; transform: translateY(-6.5px) rotate(-45deg); }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle {
+      background: none; border: none; cursor: pointer; padding: 8px;
+      color: var(--white); display: flex; align-items: center; justify-content: center;
+      opacity: 0.7; transition: opacity 0.2s;
+    }
+    .theme-toggle:hover { opacity: 1; }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .theme-toggle .icon-sun { display: none; }
+    .theme-toggle .icon-moon { display: block; }
+    [data-theme="light"] .theme-toggle .icon-sun { display: block; }
+    [data-theme="light"] .theme-toggle .icon-moon { display: none; }
+
+    /* ── FULLSCREEN MENU ── */
+    .nav-menu {
+      position: fixed; inset: 0; z-index: 998;
+      background: var(--black);
+      display: flex; flex-direction: column; justify-content: center; padding: 80px 10vw;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s cubic-bezier(.4,0,.2,1);
+    }
+    .nav-menu.open { opacity: 1; pointer-events: all; }
+    .nav-menu-links { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+    .nav-menu-links li { overflow: hidden; }
+    .nav-menu-links a {
+      font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 800;
+      color: rgba(255,255,255,0.2); text-decoration: none; letter-spacing: -0.03em;
+      display: block; padding: 6px 0;
+      transition: color 0.2s;
+    }
+    .nav-menu-links a:hover { color: var(--white); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 11px 26px; border-radius: 100px;
+      font-family: var(--font); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: background 0.2s, color 0.2s;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-primary { background: var(--white); color: var(--black); }
+    .btn-primary:hover { background: var(--off-black); color: var(--white); }
+    .btn-secondary {
+      background: transparent; color: var(--white);
+      box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.2);
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.05);
+      box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.35);
+    }
+    .btn-lg { padding: 14px 32px; font-size: 0.9375rem; }
+
+    /* ── HERO — centered ── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden; padding: 74px 40px 0;
+    }
+    #hero-dots {
+      position: absolute; inset: 0; z-index: 0; overflow: hidden;
+    }
+    #hero-dots canvas { display: block; width: 100% !important; height: 100% !important; }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-image: url('https://cdn.sanity.io/images/9xlod89z/production/36dac1117a4f0dd7e6997991889fb2d8492c49d5-10240x6400.webp');
+      background-size: cover; background-position: center center;
+      filter: brightness(0.42);
+    }
+    .hero-grad {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.7) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 860px; margin: 0 auto;
+    }
+    h1, h2, h3 { font-family: var(--font-display); }
+    .hero h1 {
+      font-size: clamp(2.5rem, 5vw, 4.75rem);
+      font-weight: 800; letter-spacing: -0.02em; line-height: 1.05;
+      margin-bottom: 24px;
+      opacity: 0; animation: fadeUp 0.9s 0.15s forwards;
+    }
+    .hero-sub {
+      font-size: 1.125rem; font-weight: 300; color: var(--gray-med);
+      max-width: 560px; margin: 0 auto 44px; line-height: 1.72;
+      opacity: 0; animation: fadeUp 0.9s 0.3s forwards;
+    }
+    .hero-ctas {
+      display: flex; align-items: center; justify-content: center;
+      gap: 14px; flex-wrap: wrap;
+      opacity: 0; animation: fadeUp 0.9s 0.44s forwards;
+    }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+
+    /* ── SHARED ── */
+    .section { position: relative; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 96px 40px; }
+    .eyebrow {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gray-dim); margin-bottom: 16px;
+    }
+    .section-h2 {
+      font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+      font-weight: 800; letter-spacing: -0.02em; line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-lead {
+      font-size: 1rem; font-weight: 300; color: var(--gray-med);
+      line-height: 1.72; max-width: 480px;
+    }
+
+    /* ── CUSTOMERS — landscape cards ── */
+    .customers-section {}
+    .customers-intro {
+      margin-bottom: 52px;
+    }
+    .customers-intro .section-h2 { max-width: 680px; }
+
+    .cases-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+      background: var(--border); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+    }
+    .case-card {
+      background: var(--black); display: grid;
+      grid-template-columns: 1fr 1fr; min-height: 340px;
+      transition: background 0.25s; cursor: pointer; overflow: hidden;
+      position: relative;
+    }
+    .case-card:hover { background: #0a0a0a; }
+    .case-card:hover .case-photo svg { opacity: 0.55; }
+    .case-text {
+      padding: 40px 36px; display: flex; flex-direction: column; justify-content: flex-end;
+    }
+    .case-logo-img {
+      height: 22px; width: auto; filter: brightness(0) invert(1); opacity: 0.85;
+      margin-bottom: 24px; object-fit: contain; object-position: left;
+    }
+    .case-tag {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--gray-dim); margin-bottom: 10px;
+    }
+    .case-headline {
+      font-size: 1.625rem; font-weight: 800; letter-spacing: -0.02em;
+      line-height: 1.15; margin-bottom: 12px;
+    }
+    .case-desc {
+      font-size: 0.875rem; font-weight: 300; color: var(--gray-med); line-height: 1.65; margin-bottom: 24px;
+    }
+    .case-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.8125rem; font-weight: 600; color: var(--white);
+      border-bottom: 1px solid rgba(255,255,255,0.22);
+      padding-bottom: 2px; width: fit-content;
+      transition: border-color 0.2s;
+    }
+    .case-cta:hover { border-color: var(--white); }
+    .case-cta svg { transition: transform 0.2s; }
+    .case-cta:hover svg { transform: translateX(3px); }
+    .case-photo-wrap {
+      overflow: hidden; position: relative;
+    }
+    .case-photo {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .case-photo svg {
+      width: 72%; height: auto; opacity: 0.28;
+      transition: opacity 0.4s ease;
+    }
+
+    /* ── WHY COSMOS ── */
+    .why-section { background: var(--off-black); }
+    .why-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+      margin-bottom: 64px;
+    }
+    .why-features {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .why-feat {
+      background: var(--off-black); padding: 32px 28px;
+      transition: background 0.22s;
+    }
+    .why-feat:hover { background: #252627; }
+    .why-feat-num {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
+      color: var(--gray-dim); margin-bottom: 20px;
+    }
+    .why-feat-title {
+      font-size: 0.9375rem; font-weight: 700; margin-bottom: 10px; line-height: 1.3;
+    }
+    .why-feat-desc {
+      font-size: 0.8125rem; font-weight: 300; color: var(--gray-med); line-height: 1.65;
+    }
+
+    /* ── USE CASES ── */
+    .usecases-section {}
+    .uc-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 52px;
+    }
+    .uc-card {
+      border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px 26px; background: var(--off-black);
+      transition: border-color 0.22s, transform 0.22s, background 0.22s; cursor: pointer;
+    }
+    .uc-card:hover {
+      border-color: rgba(255,255,255,0.18);
+      background: #252627; transform: translateY(-2px);
+    }
+    .uc-name {
+      font-size: 0.9375rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.01em;
+    }
+    .uc-desc {
+      font-size: 0.8125rem; font-weight: 300; color: var(--gray-dim); line-height: 1.6;
+    }
+
+    /* ── COSMOS STACK ── */
+    .stack-section { background: var(--off-black); }
+    .stack-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      gap: 60px; margin-bottom: 52px;
+    }
+    .stack-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    }
+    .stack-card {
+      background: var(--black); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px;
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .stack-card:hover { border-color: rgba(255,255,255,0.18); transform: translateY(-2px); }
+    .stack-card-wide { grid-column: span 2; }
+    .stack-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 12px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gray-med); margin-bottom: 18px;
+    }
+    .stack-name {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -0.015em; margin-bottom: 10px;
+    }
+    .stack-desc {
+      font-size: 0.875rem; font-weight: 300; color: var(--gray-med); line-height: 1.65;
+    }
+    .stack-metrics {
+      display: flex; gap: 28px; margin-top: 22px;
+      padding-top: 22px; border-top: 1px solid var(--border);
+    }
+    .sm-val { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.02em; }
+    .sm-lbl { font-size: 0.7rem; font-weight: 400; color: var(--gray-dim); margin-top: 3px; }
+
+    /* ── ECOSYSTEM — horizontal scroll marquee ── */
+    .eco-section { background: var(--black); border-top: 1px solid var(--border); }
+    .eco-header { margin-bottom: 48px; }
+    .eco-tabs {
+      display: flex; gap: 2px; margin-top: 40px;
+      border-bottom: 1px solid var(--border);
+    }
+    .eco-tab {
+      padding: 10px 20px; font-size: 0.875rem; font-weight: 500;
+      color: var(--gray-dim); cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.18s, border-color 0.18s;
+    }
+    .eco-tab.active { color: var(--white); border-bottom-color: var(--white); }
+    .eco-tab:hover:not(.active) { color: var(--gray-med); }
+
+    /* Marquee */
+    .eco-marquee-wrap {
+      overflow: hidden; position: relative; margin-top: 32px;
+      padding: 4px 0;
+    }
+    .eco-marquee-wrap::before,
+    .eco-marquee-wrap::after {
+      content: ''; position: absolute; top: 0; bottom: 0; width: 100px; z-index: 2; pointer-events: none;
+    }
+    .eco-marquee-wrap::before { left: 0; background: linear-gradient(90deg, var(--black), transparent); }
+    .eco-marquee-wrap::after  { right: 0; background: linear-gradient(-90deg, var(--black), transparent); }
+    .eco-track {
+      display: flex; gap: 10px; width: max-content;
+      animation: marquee 28s linear infinite;
+    }
+    .eco-track:hover { animation-play-state: paused; }
+    @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+    .eco-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 18px; border: 1px solid var(--border); border-radius: 100px;
+      background: var(--off-black); font-size: 0.8rem; font-weight: 500;
+      color: var(--gray-med); white-space: nowrap; cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .eco-chip:hover { border-color: rgba(255,255,255,0.2); color: var(--white); }
+    .eco-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* ── COSMOS HUB ── */
+    .hub-section { border-top: 1px solid var(--border); background: var(--off-black); }
+    .hub-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .hub-live {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 14px 4px 8px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03);
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--gray-med); margin-bottom: 22px;
+    }
+    .hub-live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #4ade80;
+      box-shadow: 0 0 8px #4ade80;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+    .hub-h2 {
+      font-size: clamp(1.75rem, 2.8vw, 2.5rem);
+      font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 16px;
+    }
+    .hub-body {
+      font-size: 1rem; font-weight: 300; color: var(--gray-med); line-height: 1.7; margin-bottom: 32px;
+    }
+    .hub-photo {
+      border-radius: 16px; overflow: hidden; border: 1px solid var(--border);
+      height: 420px;
+    }
+    .hub-photo img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+
+    /* ── ROADMAP TIMELINE ── */
+    .blog-section { background: var(--black); border-top: 1px solid var(--border); }
+    .blog-header {
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; margin-bottom: 44px;
+    }
+    .timeline { position: relative; padding-left: 0; }
+    .timeline::before {
+      content: ''; position: absolute; left: 108px; top: 8px; bottom: 8px;
+      width: 1px; background: var(--border);
+    }
+    .tl-item {
+      position: relative; display: grid; grid-template-columns: 108px 1fr;
+      gap: 0; padding-bottom: 44px;
+    }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--gray-dim);
+      text-align: right; padding-right: 24px; padding-top: 3px; line-height: 1.4;
+    }
+    .tl-label em { display: block; font-style: normal; font-weight: 400; margin-top: 3px; opacity: 0.5; }
+    .tl-dot {
+      position: absolute; left: 108px; top: 5px;
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1.5px solid var(--gray-dim); background: var(--black);
+      transform: translateX(-50%);
+    }
+    .tl-dot.live {
+      background: #818cf8; border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.3);
+      animation: tl-pulse 2.2s ease-in-out infinite;
+    }
+    @keyframes tl-pulse {
+      0%, 100% { box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
+      50%       { box-shadow: 0 0 0 8px rgba(99,102,241,0.0); }
+    }
+    .tl-dot.next { background: var(--gray-dim); border-color: var(--gray-dim); }
+    .tl-content { padding-left: 28px; }
+    .tl-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; line-height: 1.3; }
+    .tl-desc { font-size: 0.875rem; color: var(--gray-med); line-height: 1.65; max-width: 560px; }
+    /* live item highlight */
+    .tl-item.is-live {
+      background: linear-gradient(120deg, rgba(99,102,241,0.18) 0%, rgba(59,130,246,0.08) 50%, transparent 100%);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 12px;
+      padding: 20px 20px 20px 0;
+      margin-bottom: 24px;
+    }
+    .tl-item.is-live .tl-label { color: var(--white); padding-top: 3px; }
+    .tl-item.is-live .tl-label em {
+      opacity: 1; color: var(--white);
+      display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;
+    }
+    .tl-item.is-live .tl-label em::before {
+      content: ''; display: inline-block; width: 5px; height: 5px;
+      background: #818cf8; border-radius: 50%;
+      animation: tl-pulse 2.2s ease-in-out infinite;
+    }
+    .tl-item.is-live .tl-dot { top: 23px; }
+    .tl-item.is-live .tl-title { font-size: 1.2rem; color: var(--white); }
+    .tl-item.is-live .tl-desc { color: var(--gray-med); }
+    /* legacy selectors kept for non-timeline fallback */
+    .blog-tag {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--gray-dim); margin-bottom: 8px;
+    }
+    .blog-title {
+      font-size: 0.9rem; font-weight: 700; line-height: 1.4;
+      letter-spacing: -0.01em; flex: 1; margin-bottom: 14px;
+    }
+    .blog-date { font-size: 0.75rem; color: var(--gray-dim); margin-top: auto; }
+
+    /* ── CTA ── */
+    .cta-section { border-top: 1px solid var(--border); background: var(--off-black); }
+    .cta-inner {
+      display: flex; justify-content: space-between; align-items: center; gap: 60px;
+    }
+    .cta-h2 {
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; max-width: 520px;
+    }
+    .cta-actions { display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
+
+    /* ── FOOTER ── */
+    footer { background: var(--black); border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 64px 40px 40px; }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr repeat(4, 1fr); gap: 56px; margin-bottom: 56px;
+    }
+    .footer-logo {
+      font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; color: var(--white);
+    }
+    .footer-desc {
+      font-size: 0.875rem; font-weight: 300; color: var(--gray-dim);
+      line-height: 1.72; margin-top: 14px; max-width: 260px;
+    }
+    .footer-col-h {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--white); margin-bottom: 18px;
+    }
+    .footer-list { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-list a {
+      font-size: 0.875rem; font-weight: 300; color: var(--gray-dim);
+      transition: color 0.18s;
+    }
+    .footer-list a:hover { color: var(--white); }
+    .footer-bottom {
+      border-top: 1px solid var(--border); padding-top: 28px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-copy { font-size: 0.8rem; color: var(--gray-dim); max-width: 600px; line-height: 1.6; }
+    .footer-socials { display: flex; gap: 12px; }
+    .social-btn {
+      width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray-dim); cursor: pointer;
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+    }
+    .social-btn:hover { border-color: rgba(255,255,255,0.22); color: var(--white); background: rgba(255,255,255,0.04); }
+
+    /* ── USAGE EXAMPLES ── */
+    .examples-section { background: var(--off-black); border-top: 1px solid var(--border); }
+    .examples-tabs {
+      display: flex; gap: 0; margin-top: 40px; margin-bottom: 28px;
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .ex-tab {
+      padding: 10px 20px; font-size: 0.875rem; font-weight: 500;
+      color: var(--gray-dim); cursor: pointer; background: none; border: none;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color 0.18s, border-color 0.18s; font-family: var(--font);
+      white-space: nowrap;
+    }
+    .ex-tab.active { color: var(--white); border-bottom-color: var(--white); }
+    .ex-tab:hover:not(.active) { color: var(--gray-med); }
+    .code-window {
+      background: #050505; border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+    }
+    .code-header {
+      display: flex; align-items: center; gap: 7px; padding: 14px 18px;
+      border-bottom: 1px solid var(--border); background: #080808;
+    }
+    .code-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .code-lang {
+      font-size: 0.7rem; color: var(--gray-dim); letter-spacing: 0.06em;
+      margin-left: auto; font-family: 'Courier New', monospace;
+    }
+    .code-pre {
+      padding: 28px 32px; font-family: 'Courier New', Courier, monospace;
+      font-size: 0.875rem; line-height: 1.85; color: #c9d1d9;
+      white-space: pre; overflow-x: auto; margin: 0;
+    }
+    .cc { color: #636e7b; }   /* comment */
+    .cs { color: #86efac; }   /* string */
+    .ck { color: #93c5fd; }   /* keyword/flag */
+    .hub-code { border-radius: 16px; overflow: hidden; }
+
+    /* ── SCROLL REVEAL ── */
+    .r { opacity:0; transform:translateY(18px);
+      transition: opacity 0.6s cubic-bezier(.4,0,.2,1), transform 0.6s cubic-bezier(.4,0,.2,1); }
+    .r.on { opacity:1; transform:translateY(0); }
+    .r[data-d="1"] { transition-delay:.08s; }
+    .r[data-d="2"] { transition-delay:.16s; }
+    .r[data-d="3"] { transition-delay:.24s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .stack-grid { grid-template-columns: 1fr 1fr; }
+      .stack-card-wide { grid-column: span 2; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+      .blog-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 1024px) {
+      .hiw-row { grid-template-columns: repeat(3, 1fr) !important; }
+    }
+    @media (max-width: 860px) {
+      .nav-links { display: none; }
+      .hiw-row { grid-template-columns: 1fr 1fr !important; }
+      .cases-grid { grid-template-columns: 1fr; }
+      .case-card { grid-template-columns: 1fr; min-height: auto; }
+      .case-photo-wrap { height: 220px; position: relative; }
+      .case-photo { position: absolute; inset: 0; }
+      .why-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hub-inner { grid-template-columns: 1fr; gap: 40px; }
+      .hub-photo { height: 260px; }
+      .cta-inner { flex-direction: column; align-items: flex-start; }
+      .stack-grid { grid-template-columns: 1fr; }
+      .stack-card-wide { grid-column: span 1; }
+    }
+    @media (max-width: 700px) {
+      nav { padding: 0 20px; }
+      .wrap { padding: 72px 20px; }
+      .hero { padding: 74px 20px 0; }
+      .uc-grid { grid-template-columns: 1fr 1fr; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .why-features { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 2.3rem; }
+      .uc-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <svg viewBox="0 0 2 2" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">
+      <rect x="0" y="0" width="1" height="1" fill="black"/>
+      <rect x="1" y="0" width="1" height="1" fill="white"/>
+      <rect x="0" y="1" width="1" height="1" fill="white"/>
+      <rect x="1" y="1" width="1" height="1" fill="black"/>
+    </svg>
+    SpaceRouter
+  </a>
+  <ul class="nav-links"></ul>
+  <button class="theme-toggle" aria-label="Toggle theme">
+    <!-- moon: shown in dark mode -->
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <!-- sun: shown in light mode -->
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
+  <button class="ham-btn" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- FULLSCREEN NAV MENU -->
+<div class="nav-menu" aria-hidden="true">
+  <ul class="nav-menu-links">
+    <li><a href="#the-problem">The Problem</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#examples">Examples</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#get-started">Get Started</a></li>
+    <li><a href="#sdks">SDKs</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+  </ul>
+</div>
+
+<!-- HERO — center aligned -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div id="hero-dots"></div>
+  <div class="hero-grad"></div>
+  <div class="hero-content">
+    <h1>Residential IP as a Service for AI Agents</h1>
+    <p class="hero-sub">Many websites block datacenter IPs. SpaceRouter routes your agent's traffic through real residential connections — transparently, with zero code changes beyond setting a proxy URL.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn btn-primary btn-lg">
+        Get Started
+        <svg class="arrow-icon" viewBox="0 0 20 30" fill="currentColor"><path d="M9.997 19.997v-10h10v10zM0 29.998V20h10v10z"/><path d="M0 10V0h10v10z"/></svg>
+      </a>
+      <a href="#" class="btn btn-secondary btn-lg">How It Works</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- FEATURES — landscape cards -->
+<section id="the-problem" class="section customers-section">
+  <div class="wrap">
+    <div class="customers-intro r">
+      <p class="eyebrow">The Problem</p>
+      <h2 class="section-h2">AI Agents are not traditional bots. But they're blocked like them.</h2>
+      <p class="section-lead" style="margin-top:14px;max-width:640px;">Unlike simple web scrapers, they navigate websites the way humans do — clicking, scrolling, and interacting with dynamic content. But getting them treated like humans is another challenge entirely. Residential IPs are a critical piece of that puzzle. SpaceRouter provides Residential IPs with agent-native tooling (Skill, CLI, SDK, API).</p>
+    </div>
+    <div class="cases-grid">
+      <!-- HTTP & SOCKS5 -->
+      <div class="case-card r">
+        <div class="case-text">
+          <div class="case-headline">HTTP &amp; SOCKS5</div>
+          <div class="case-desc">Dual-protocol proxy support. HTTP on port 8080, SOCKS5 on port 1080. Same residential node pool behind both.</div>
+        </div>
+        <div class="case-photo-wrap">
+          <div class="case-photo">
+            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <!-- two source nodes -->
+              <circle cx="22" cy="36" r="6"/><circle cx="22" cy="84" r="6"/>
+              <!-- lanes to gateway -->
+              <line x1="28" y1="36" x2="78" y2="36"/><line x1="28" y1="84" x2="78" y2="84"/>
+              <polyline points="70,29 78,36 70,43"/><polyline points="70,77 78,84 70,91"/>
+              <!-- gateway -->
+              <rect x="82" y="18" width="36" height="84" rx="6"/>
+              <line x1="82" y1="44" x2="118" y2="44" opacity="0.4"/>
+              <line x1="82" y1="60" x2="118" y2="60" opacity="0.4"/>
+              <line x1="82" y1="76" x2="118" y2="76" opacity="0.4"/>
+              <!-- output -->
+              <line x1="118" y1="60" x2="162" y2="60"/>
+              <polyline points="154,53 162,60 154,67"/>
+              <rect x="164" y="50" width="20" height="20" rx="4"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="case-card r" data-d="1">
+        <div class="case-text">
+          <div class="case-headline">Geographic Targeting</div>
+          <div class="case-desc">Route requests through specific countries using ISO 3166-1 codes. Need a Korean IP? Set <code style="font-family:monospace;font-size:0.85em">X-SpaceRouter-Region: KR</code>.</div>
+        </div>
+        <div class="case-photo-wrap">
+          <div class="case-photo">
+            <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <!-- globe -->
+              <circle cx="70" cy="78" r="50"/>
+              <ellipse cx="70" cy="78" rx="24" ry="50"/>
+              <line x1="20" y1="78" x2="120" y2="78"/>
+              <path d="M27 56 Q70 46 113 56"/>
+              <path d="M27 100 Q70 110 113 100"/>
+              <!-- location pin -->
+              <path d="M88 30 C88 18 72 18 72 30 C72 42 80 54 80 54 C80 54 88 42 88 30Z"/>
+              <circle cx="80" cy="30" r="4" fill="white" stroke="none"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="case-card r" data-d="2">
+        <div class="case-text">
+          <div class="case-headline">Zero Code Changes</div>
+          <div class="case-desc">Standard proxy protocol. Just set your proxy URL and authenticate with your API key. Works with any HTTP client.</div>
+        </div>
+        <div class="case-photo-wrap">
+          <div class="case-photo">
+            <svg viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <!-- client box -->
+              <rect x="15" y="35" width="50" height="50" rx="8"/>
+              <line x1="25" y1="52" x2="55" y2="52" opacity="0.5"/>
+              <line x1="25" y1="60" x2="50" y2="60" opacity="0.5"/>
+              <line x1="25" y1="68" x2="55" y2="68" opacity="0.5"/>
+              <!-- plug prongs -->
+              <line x1="65" y1="52" x2="82" y2="52"/><line x1="65" y1="68" x2="82" y2="68"/>
+              <!-- plug body -->
+              <rect x="82" y="46" width="16" height="28" rx="3"/>
+              <!-- socket -->
+              <rect x="102" y="46" width="16" height="28" rx="3"/>
+              <line x1="107" y1="54" x2="113" y2="54" opacity="0.5"/>
+              <line x1="107" y1="66" x2="113" y2="66" opacity="0.5"/>
+              <!-- wires to proxy -->
+              <line x1="118" y1="52" x2="135" y2="52"/><line x1="118" y1="68" x2="135" y2="68"/>
+              <!-- proxy/internet box -->
+              <rect x="135" y="35" width="50" height="50" rx="8"/>
+              <circle cx="160" cy="60" r="14"/>
+              <line x1="146" y1="60" x2="174" y2="60" opacity="0.5"/>
+              <ellipse cx="160" cy="60" rx="7" ry="14" opacity="0.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="case-card r" data-d="3">
+        <div class="case-text">
+          <div class="case-headline">Security Built In</div>
+          <div class="case-desc">mTLS between components, SSRF protection, DNS rebinding prevention, rate limiting, and full header stripping before reaching target sites.</div>
+        </div>
+        <div class="case-photo-wrap">
+          <div class="case-photo">
+            <svg viewBox="0 0 120 140" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="white" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
+              <!-- shield -->
+              <path d="M60 12 L100 28 L100 64 Q100 102 60 126 Q20 102 20 64 L20 28 Z"/>
+              <!-- padlock body -->
+              <rect x="42" y="72" width="36" height="28" rx="4"/>
+              <!-- shackle -->
+              <path d="M49 72 L49 62 Q49 46 60 46 Q71 46 71 62 L71 72"/>
+              <!-- keyhole -->
+              <circle cx="60" cy="82" r="4" fill="white" stroke="none"/>
+              <line x1="60" y1="86" x2="60" y2="92" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES GRID -->
+<section id="features" class="section usecases-section">
+  <div class="wrap">
+    <p class="eyebrow r">All Features</p>
+    <h2 class="section-h2 r" data-d="1">Everything your agent needs</h2>
+    <div class="uc-grid">
+      <div class="uc-card r"><div class="uc-name">HTTP &amp; SOCKS5</div><div class="uc-desc">Dual-protocol support. HTTP on port 8080, SOCKS5 on port 1080. Same residential node pool behind both.</div></div>
+      <div class="uc-card r" data-d="1"><div class="uc-name">Geographic Targeting</div><div class="uc-desc">Route through specific countries using ISO 3166-1 codes. Set X-SpaceRouter-Region: KR for a Korean IP.</div></div>
+      <div class="uc-card r" data-d="2"><div class="uc-name">Zero Code Changes</div><div class="uc-desc">Standard proxy protocol. Just set your proxy URL and authenticate with your API key. Works with any HTTP client.</div></div>
+      <div class="uc-card r" data-d="3"><div class="uc-name">Intelligent Routing</div><div class="uc-desc">Health-scored node selection with weighted preferences. Requests route through the best available node automatically.</div></div>
+      <div class="uc-card r"><div class="uc-name">Security Built In</div><div class="uc-desc">mTLS between components, SSRF protection, DNS rebinding prevention, rate limiting, and full header stripping.</div></div>
+      <div class="uc-card r" data-d="1"><div class="uc-name">Request Tracing</div><div class="uc-desc">Every request gets a unique X-SpaceRouter-Request-Id for end-to-end debugging across the entire routing path.</div></div>
+      <div class="uc-card r" data-d="2"><div class="uc-name">Distributed Nodes</div><div class="uc-desc">Home Nodes run on residential machines with automatic NAT traversal via UPnP — no manual configuration needed.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="section stack-section">
+  <div class="wrap">
+    <div class="stack-header">
+      <div class="r">
+        <p class="eyebrow">How It Works</p>
+        <h2 class="section-h2">Five steps, one proxy URL</h2>
+      </div>
+      <p class="section-lead r" data-d="1">Your agent sends a standard proxy request — SpaceRouter handles everything else.</p>
+    </div>
+    <div class="stack-grid" style="grid-template-columns:1fr;">
+      <div class="stack-card hiw-row r" style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:0;overflow:hidden;">
+        <div style="padding:32px 28px;border-right:1px solid var(--border);">
+          <div class="stack-pill">01</div>
+          <div class="stack-name" style="font-size:1rem;">Your Agent</div>
+          <div class="stack-desc">Sends a request through the Proxy Gateway using standard proxy protocol.</div>
+        </div>
+        <div style="padding:32px 28px;border-right:1px solid var(--border);">
+          <div class="stack-pill">02</div>
+          <div class="stack-name" style="font-size:1rem;">Proxy Gateway</div>
+          <div class="stack-desc">Validates your API key and checks rate limits.</div>
+        </div>
+        <div style="padding:32px 28px;border-right:1px solid var(--border);">
+          <div class="stack-pill">03</div>
+          <div class="stack-name" style="font-size:1rem;">Coordination API</div>
+          <div class="stack-desc">Selects the best Home Node based on health, geography, and IP type.</div>
+        </div>
+        <div style="padding:32px 28px;border-right:1px solid var(--border);">
+          <div class="stack-pill">04</div>
+          <div class="stack-name" style="font-size:1rem;">Home Node</div>
+          <div class="stack-desc">Forwards your request from its residential IP to the target.</div>
+        </div>
+        <div style="padding:32px 28px;">
+          <div class="stack-pill">05</div>
+          <div class="stack-name" style="font-size:1rem;">Target Website</div>
+          <div class="stack-desc">Sees a residential IP, serves content normally. Response flows back through the same path.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- USAGE EXAMPLES -->
+<section id="examples" class="section examples-section">
+  <div class="wrap">
+    <div class="r">
+      <p class="eyebrow">Usage Examples</p>
+      <h2 class="section-h2">Zero configuration.<br/>Real residential IPs.</h2>
+    </div>
+    <div class="examples-tabs r" data-d="1">
+      <button class="ex-tab active" data-ex="http">curl HTTP</button>
+      <button class="ex-tab" data-ex="socks5">curl SOCKS5</button>
+      <button class="ex-tab" data-ex="geo">Geo Targeting</button>
+      <button class="ex-tab" data-ex="python">Python SDK</button>
+      <button class="ex-tab" data-ex="js">JavaScript SDK</button>
+    </div>
+    <div class="code-window r" data-d="2">
+      <div class="code-header">
+        <span class="code-dot" style="background:#ff5f56"></span>
+        <span class="code-dot" style="background:#ffbd2e"></span>
+        <span class="code-dot" style="background:#27c93f"></span>
+        <span class="code-lang" id="ex-lang">bash</span>
+      </div>
+      <pre class="code-pre" id="ex-code"></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture" class="section stack-section" style="border-top:1px solid var(--border);">
+  <div class="wrap">
+    <div class="stack-header">
+      <div class="r">
+        <p class="eyebrow">Architecture</p>
+        <h2 class="section-h2">Three components</h2>
+      </div>
+      <p class="section-lead r" data-d="1">Each component has a single responsibility. Together they route your agent's traffic through a real residential IP.</p>
+    </div>
+    <div class="stack-grid">
+      <div class="stack-card r">
+        <div class="stack-pill">Entry point</div>
+        <div class="stack-name">Proxy Gateway</div>
+        <div class="stack-desc">Agent-facing entry point. Handles HTTP and SOCKS5 proxy protocols, authentication, rate limiting, and route selection.</div>
+      </div>
+      <div class="stack-card r" data-d="1">
+        <div class="stack-pill">Control plane</div>
+        <div class="stack-name">Coordination API</div>
+        <div class="stack-desc">Central control plane. Manages the node registry, API keys, IP classification (via IPinfo.io), and health-based routing.</div>
+      </div>
+      <div class="stack-card r" data-d="2">
+        <div class="stack-pill">Exit point</div>
+        <div class="stack-name">Home Node</div>
+        <div class="stack-desc">Residential exit point. Runs on home machines behind NAT, auto-configures port forwarding via UPnP, and proxies traffic from its residential IP.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GET STARTED -->
+<section id="get-started" class="section hub-section">
+  <div class="wrap">
+    <div class="hub-inner">
+      <div class="r">
+        <div class="hub-live"><span class="hub-live-dot"></span>Phase 1.1 — Live now</div>
+        <h2 class="hub-h2">Get started<br/>in two steps</h2>
+        <p class="hub-body">Create an API key, point your proxy URL, and your next request routes through a real residential IP. No infrastructure to manage, no code to change.</p>
+      </div>
+      <div class="hub-code r" data-d="2">
+        <div class="code-window">
+          <div class="code-header">
+            <span class="code-dot" style="background:#ff5f56"></span>
+            <span class="code-dot" style="background:#ffbd2e"></span>
+            <span class="code-dot" style="background:#27c93f"></span>
+            <span class="code-lang">bash</span>
+          </div>
+          <pre class="code-pre"><span class="cc"># Step 1 — Create an API key</span>
+curl -X POST https://coordination.spacerouter.org/api-keys \
+  -H <span class="cs">"Content-Type: application/json"</span> \
+  -d <span class="cs">'{"name": "my-agent"}'</span>
+
+<span class="cc"># Step 2 — Use the proxy</span>
+curl <span class="ck">-x</span> http://YOUR_API_KEY@gateway.spacerouter.org:8080 \
+  https://httpbin.org/ip
+
+<span class="cc"># That's it. Your request is now routed through a residential IP.</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SDKs -->
+<section id="sdks" class="section usecases-section" style="border-top:1px solid var(--border);">
+  <div class="wrap">
+    <p class="eyebrow r">SDKs</p>
+    <h2 class="section-h2 r" data-d="1" style="margin-bottom:52px;">Native libraries for every stack</h2>
+    <div class="uc-grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="uc-card r" style="padding:32px;">
+        <div class="uc-name" style="font-size:1.1rem;margin-bottom:14px;">Python</div>
+        <div class="code-window" style="margin-bottom:16px;">
+          <pre class="code-pre" style="padding:16px 20px;font-size:0.8125rem;">pip install spacerouter</pre>
+        </div>
+        <div class="uc-desc">Sync + async, HTTP + SOCKS5, geographic targeting. Full type hints.</div>
+      </div>
+      <div class="uc-card r" data-d="1" style="padding:32px;">
+        <div class="uc-name" style="font-size:1.1rem;margin-bottom:14px;">JavaScript</div>
+        <div class="code-window" style="margin-bottom:16px;">
+          <pre class="code-pre" style="padding:16px 20px;font-size:0.8125rem;">npm install @spacenetwork/spacerouter</pre>
+        </div>
+        <div class="uc-desc">HTTP proxy with TypeScript support. Works in Node.js and edge runtimes.</div>
+      </div>
+    </div>
+    <div style="margin-top:28px;" class="r" data-d="2">
+      <a href="#" class="btn btn-secondary">
+        SDK on GitHub
+        <svg class="arrow-icon" viewBox="0 0 20 30" fill="currentColor"><path d="M9.997 19.997v-10h10v10zM0 29.998V20h10v10z"/><path d="M0 10V0h10v10z"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap" class="section blog-section">
+  <div class="wrap">
+    <div class="blog-header">
+      <div class="r">
+        <p class="eyebrow">Roadmap</p>
+        <h2 class="section-h2">The network is just beginning</h2>
+      </div>
+    </div>
+    <p class="section-lead r" style="margin-bottom:44px;max-width:760px;">AI agents are the new users of the internet. SpaceRouter is their network. Starting with residential IP addresses that give agents private, unrestricted access to the web, SpaceRouter is building the world's fastest privacy-preserving, decentralized routing network — token-incentivized, inspired by Tor, and destined to scale across the globe and into space through Space Network, a decentralized satellite telecommunications network powered by Spacecoin.</p>
+    <div class="timeline">
+      <div class="tl-item is-live r">
+        <div class="tl-label">1.1<em>Live</em></div>
+        <div class="tl-dot live"></div>
+        <div class="tl-content">
+          <div class="tl-title">MVP Launch</div>
+          <div class="tl-desc">CLI setup, Python &amp; JS SDKs, HTTP &amp; SOCKS5 proxy, geographic targeting. Live now.</div>
+        </div>
+      </div>
+      <div class="tl-item r" data-d="1">
+        <div class="tl-label">1.2<em>Next</em></div>
+        <div class="tl-dot next"></div>
+        <div class="tl-content">
+          <div class="tl-title">Proxy Nodes + Staking</div>
+          <div class="tl-desc">Spacecoin staking, on-chain reputation for node operators, incentive payouts.</div>
+        </div>
+      </div>
+      <div class="tl-item r" data-d="2">
+        <div class="tl-label">1.3<em>Planned</em></div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-title">Payments</div>
+          <div class="tl-desc">Spacecoin payment settlement with cryptographic receipts.</div>
+        </div>
+      </div>
+      <div class="tl-item r" data-d="3">
+        <div class="tl-label">2<em>Planned</em></div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-title">Entry Nodes</div>
+          <div class="tl-desc">Distributed entry nodes replace the cloud gateway. Same SDK interface.</div>
+        </div>
+      </div>
+      <div class="tl-item r" data-d="4">
+        <div class="tl-label">3<em>Planned</em></div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-title">Multi-Hop Routing</div>
+          <div class="tl-desc">Three-hop circuits (guard → middle → exit) for full privacy.</div>
+        </div>
+      </div>
+      <div class="tl-item r" data-d="5">
+        <div class="tl-label">4<em>Vision</em></div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-title">Full Decentralization</div>
+          <div class="tl-desc">No central coordination. Agents read the node registry from the blockchain. On-chain payments and reputation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section cta-section">
+  <div class="wrap">
+    <div class="cta-inner">
+      <div class="r">
+        <p class="eyebrow">Get Started</p>
+        <h2 class="cta-h2">Ready to route your agents through residential IPs?</h2>
+      </div>
+      <div class="cta-actions r" data-d="1">
+        <a href="#" class="btn btn-secondary btn-lg">View documentation</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <p class="footer-copy">© 2025 SpaceRouter. Built by Space Network.</p>
+      <div class="footer-socials">
+        <a href="#" class="social-btn" aria-label="LinkedIn"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        <a href="#" class="social-btn" aria-label="X"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+        <a href="#" class="social-btn" aria-label="Telegram"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>
+        <a href="#" class="social-btn" aria-label="Discord"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── USAGE EXAMPLES DATA ──
+const examplesData = {
+  http: {
+    lang: 'bash',
+    code: `curl <span class="ck">-x</span> http://sr_live_YOUR_API_KEY@gateway.spacerouter.io:8080 \\
+  https://httpbin.org/ip`
+  },
+  socks5: {
+    lang: 'bash',
+    code: `curl <span class="ck">--socks5</span> gateway.spacerouter.io:1080 \\
+  <span class="ck">--proxy-user</span> sr_live_YOUR_API_KEY: \\
+  https://httpbin.org/ip`
+  },
+  geo: {
+    lang: 'bash',
+    code: `curl <span class="ck">-x</span> http://sr_live_YOUR_API_KEY@gateway.spacerouter.io:8080 \\
+  <span class="ck">-H</span> <span class="cs">"X-SpaceRouter-Region: KR"</span> \\
+  https://httpbin.org/ip`
+  },
+  python: {
+    lang: 'python',
+    code: `<span class="ck">from</span> spacerouter <span class="ck">import</span> AsyncSpaceRouter
+
+<span class="ck">async with</span> AsyncSpaceRouter(
+    api_key=<span class="cs">"sr_live_YOUR_KEY"</span>,
+    gateway_url=<span class="cs">"https://gateway.spacerouter.io:8080"</span>,
+) <span class="ck">as</span> router:
+    response = <span class="ck">await</span> router.get(
+        <span class="cs">"https://target-website.com/data"</span>,
+        region=<span class="cs">"KR"</span>,
+        ip_type=<span class="cs">"residential"</span>,
+    )
+    print(response.json())`
+  },
+  js: {
+    lang: 'javascript',
+    code: `<span class="ck">import</span> { SpaceRouter } <span class="ck">from</span> <span class="cs">"spacerouter"</span>;
+
+<span class="ck">const</span> router = <span class="ck">new</span> SpaceRouter({
+  apiKey: <span class="cs">"sr_live_YOUR_KEY"</span>,
+  gatewayUrl: <span class="cs">"https://gateway.spacerouter.io:8080"</span>,
+});
+
+<span class="ck">const</span> response = <span class="ck">await</span> router.get(<span class="cs">"https://httpbin.org/ip"</span>, {
+  region: <span class="cs">"KR"</span>,
+  ipType: <span class="cs">"residential"</span>,
+});
+console.log(response.body);`
+  }
+};
+
+function setExample(key) {
+  const ex = examplesData[key];
+  document.getElementById('ex-code').innerHTML = ex.code;
+  document.getElementById('ex-lang').textContent = ex.lang;
+}
+setExample('http');
+
+document.querySelectorAll('.ex-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ex-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    setExample(tab.dataset.ex);
+  });
+});
+
+// ── SCROLL REVEAL ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+}, { threshold: 0.08, rootMargin: '0px 0px -28px 0px' });
+document.querySelectorAll('.r').forEach(el => io.observe(el));
+
+// ── NAV SCROLL ──
+window.addEventListener('scroll', () => {
+  document.querySelector('nav').style.borderBottomColor =
+    scrollY > 10 ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.06)';
+}, { passive: true });
+
+/* ── THEME TOGGLE ── */
+(function () {
+  const btn = document.querySelector('.theme-toggle');
+  const html = document.documentElement;
+  const saved = localStorage.getItem('sr-theme');
+  if (saved) html.setAttribute('data-theme', saved);
+  btn && btn.addEventListener('click', () => {
+    const current = html.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('sr-theme', next);
+  });
+})();
+
+/* ── HAMBURGER MENU ── */
+(function () {
+  const btn = document.querySelector('.ham-btn');
+  const menu = document.querySelector('.nav-menu');
+  if (!btn || !menu) return;
+  btn.addEventListener('click', () => {
+    const open = btn.classList.toggle('open');
+    menu.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open);
+    menu.setAttribute('aria-hidden', !open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+  menu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      btn.classList.remove('open');
+      menu.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    });
+  });
+})();
+
+/* ── HERO DOTTED SURFACE (Three.js) ── */
+(function () {
+  const container = document.getElementById('hero-dots');
+  if (!container || typeof THREE === 'undefined') return;
+
+  const SEPARATION = 150, AMOUNTX = 40, AMOUNTY = 60;
+
+  const scene = new THREE.Scene();
+  const w = container.offsetWidth || window.innerWidth;
+  const h = container.offsetHeight || window.innerHeight;
+
+  const camera = new THREE.PerspectiveCamera(60, w / h, 1, 10000);
+  camera.position.set(0, 355, 1220);
+
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(w, h);
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+
+  const geometry = new THREE.BufferGeometry();
+  const positions = [], colors = [];
+  for (let ix = 0; ix < AMOUNTX; ix++) {
+    for (let iy = 0; iy < AMOUNTY; iy++) {
+      positions.push(ix * SEPARATION - (AMOUNTX * SEPARATION) / 2, 0, iy * SEPARATION - (AMOUNTY * SEPARATION) / 2);
+      colors.push(0.9, 0.9, 0.9);
+    }
+  }
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({ size: 7, vertexColors: true, transparent: true, opacity: 0.55, sizeAttenuation: true });
+  scene.add(new THREE.Points(geometry, material));
+
+  let count = 0;
+  (function animate() {
+    requestAnimationFrame(animate);
+    const pos = geometry.attributes.position.array;
+    let i = 0;
+    for (let ix = 0; ix < AMOUNTX; ix++) {
+      for (let iy = 0; iy < AMOUNTY; iy++) {
+        pos[i * 3 + 1] = Math.sin((ix + count) * 0.3) * 50 + Math.sin((iy + count) * 0.5) * 50;
+        i++;
+      }
+    }
+    geometry.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+    count += 0.07;
+  })();
+
+  window.addEventListener('resize', () => {
+    const w = container.offsetWidth, h = container.offsetHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
