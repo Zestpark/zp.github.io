@@ -712,7 +712,28 @@
        GET STARTED
     ══════════════════════════════════════════════════ */
     #getstarted {
-      background: color-mix(in srgb, var(--blue) 60%, #06060f);
+      position: relative;
+      background: #06060f;
+      isolation: isolate;
+    }
+    #getstarted::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        color-mix(in srgb, var(--blue) 12%, #06060f) 25%,
+        color-mix(in srgb, var(--blue) 30%, #030310) 65%,
+        color-mix(in srgb, var(--blue) 38%, #030310) 100%
+      );
+      transform: translateY(55%);
+      transition: transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+    #getstarted.gs-active::before {
+      transform: translateY(0%);
     }
     #getstarted .eyebrow { color: rgba(255,255,255,0.55); }
     #getstarted .sec-title { color: #fff; }
@@ -1810,6 +1831,19 @@
       }
       window.addEventListener('scroll', update, { passive: true });
       update();
+    })();
+
+    // Get Started — blue gradient rises on half-visible
+    (function() {
+      const gs = document.getElementById('getstarted');
+      if (!gs) return;
+      const obs = new IntersectionObserver(entries => {
+        if (entries[0].intersectionRatio >= 0.5) {
+          gs.classList.add('gs-active');
+          obs.disconnect();
+        }
+      }, { threshold: 0.5 });
+      obs.observe(gs);
     })();
 
     // ─── HOW IT WORKS — BEAMS BACKGROUND ──────────────────────

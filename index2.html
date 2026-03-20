@@ -192,6 +192,7 @@
       position: relative; min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       text-align: center; overflow: hidden; padding: 74px 40px 0;
+      background: #0d0a08; /* fallback while video loads / if it fails */
     }
     #hero-dots {
       position: absolute; inset: 0; z-index: 0; overflow: hidden;
@@ -768,8 +769,10 @@
 
 <!-- HERO — center aligned -->
 <section class="hero">
-  <video class="hero-bg" autoplay muted loop playsinline preload="auto">
-    <source src="hero-bg.mp4" type="video/mp4">
+  <video class="hero-bg" autoplay muted loop playsinline preload="auto"
+    onerror="this.style.display='none'">
+    <source src="hero-bg.mp4" type="video/mp4"
+      onerror="this.parentElement.style.display='none'">
   </video>
   <div id="hero-dots"></div>
   <div class="hero-grad"></div>
