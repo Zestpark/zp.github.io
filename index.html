@@ -183,6 +183,8 @@
     }
     .section-inner:last-child { padding-bottom: 0; }
     .section-inner:not(:last-child) { padding-bottom: 32px; }
+    .section-inner:not(:last-child) .sec-title { margin-bottom: 0; }
+    .section-inner:last-child .sec-title { margin-bottom: 32px; }
     .eyebrow {
       font-family: var(--ff-mono);
       font-size: 9.5px;
@@ -1258,7 +1260,7 @@
       <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:0">
         <div>
           <div class="eyebrow">Features</div>
-          <h2 class="sec-title" style="margin-bottom:0">Features</h2>
+          <h2 class="sec-title">Features</h2>
         </div>
         <span class="tag">08 capabilities</span>
       </div>
